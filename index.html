@@ -19,17 +19,17 @@ img{max-width:100%}
 /* Layout: a two-lane exchange. R2 on the left, Claude on the right, Kevin's decisions on the center rail. Live status sits on top. */
 :root{
   --bg:#f3f4f1; --surface:#ffffff; --ink:#1b1f1d; --muted:#5e6661; --line:#d9ddd8;
-  --r2:#1d7a57; --r2-soft:#e2f1ea; --claude:#b85a22; --claude-soft:#f7e8dd; --kevin:#3451c9; --kevin-soft:#e4e9fb;
+  --r2:#1d7a57; --r2-soft:#e2f1ea; --claude:#b85a22; --claude-soft:#f7e8dd; --kevin:#3451c9; --kevin-soft:#e4e9fb; --codex:#6b4fd8;
   --warn:#a86b00; --warn-soft:#fbf0d9;
   --display:"Sora",ui-sans-serif,system-ui,sans-serif; --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121513; --surface:#1a1e1c; --ink:#e8ebe8; --muted:#9aa39e; --line:#2c322f;
-  --r2:#5cc79c; --r2-soft:#16302a; --claude:#f0a06c; --claude-soft:#3a2518; --kevin:#93a8ff; --kevin-soft:#1e2647;
+  --r2:#5cc79c; --r2-soft:#16302a; --claude:#f0a06c; --claude-soft:#3a2518; --kevin:#93a8ff; --kevin-soft:#1e2647; --codex:#b4a2ff;
   --warn:#e8b45a; --warn-soft:#352914; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121513; --surface:#1a1e1c; --ink:#e8ebe8; --muted:#9aa39e; --line:#2c322f;
-  --r2:#5cc79c; --r2-soft:#16302a; --claude:#f0a06c; --claude-soft:#3a2518; --kevin:#93a8ff; --kevin-soft:#1e2647;
+  --r2:#5cc79c; --r2-soft:#16302a; --claude:#f0a06c; --claude-soft:#3a2518; --kevin:#93a8ff; --kevin-soft:#1e2647; --codex:#b4a2ff;
   --warn:#e8b45a; --warn-soft:#352914; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body)}
@@ -74,6 +74,7 @@ h2{font:600 13px var(--display);text-transform:uppercase;letter-spacing:.08em;co
 .ev{position:relative;display:grid;grid-template-columns:1fr 64px 1fr;align-items:start}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:0;overflow-wrap:anywhere}
 .ev.R2 .card{grid-column:1;border-left:3px solid var(--r2)}
+.ev.Codex .card{grid-column:1;border-left:3px solid var(--codex)} .ev.Codex .node{background:var(--codex)} .ev.Codex .kind{color:var(--codex)}
 .ev.Claude .card{grid-column:3;border-right:3px solid var(--claude)}
 .ev.Kevin .card{grid-column:1 / -1;justify-self:center;max-width:72%;background:var(--kevin-soft);border-color:transparent;text-align:center}
 .node{grid-column:2;grid-row:1;justify-self:center;margin-top:14px;width:12px;height:12px;border-radius:50%;border:2px solid var(--bg);position:relative;z-index:1}
@@ -96,7 +97,7 @@ a:hover{text-decoration-color:currentColor}
   .feed::before{left:6px}
   .ev{grid-template-columns:20px minmax(0,1fr)}
   .ev .card,.ev.R2 .card,.ev.Claude .card,.ev.Kevin .card{grid-column:2;max-width:none;text-align:left;justify-self:stretch;border-right:1px solid var(--line);border-left:3px solid var(--r2)}
-  .ev.Claude .card{border-left-color:var(--claude)} .ev.Kevin .card{border-left-color:var(--kevin);border-color:transparent;border-left:3px solid var(--kevin)}
+  .ev.Claude .card{border-left-color:var(--claude)} .ev.Codex .card{border-left-color:var(--codex)} .ev.Kevin .card{border-left-color:var(--kevin);border-color:transparent;border-left:3px solid var(--kevin)}
   .ev.Claude .meta,.ev.Kevin .meta,.ev.Claude .links,.ev.Kevin .links{justify-content:flex-start}
   .node,.ev.Kevin .node{grid-column:1;display:block;justify-self:start;margin-left:1px}
   .ev.Kevin .node{background:var(--kevin)}
@@ -231,7 +232,7 @@ body{min-height:100vh;background:
 .panel{padding:20px 22px}
 .tile{border-radius:18px}
 .card{border-radius:16px}
-.ev.R2 .card{border-left:3px solid var(--r2)} .ev.Claude .card{border-right:3px solid var(--claude)}
+.ev.R2 .card{border-left:3px solid var(--r2)} .ev.Codex .card{border-left:3px solid var(--codex)} .ev.Claude .card{border-right:3px solid var(--claude)}
 .ev.Kevin .card{background:color-mix(in srgb,var(--kevin-soft) 70%,transparent)}
 .waiting{border-left:4px solid var(--kevin)} .ready{border-left:4px solid var(--claude)}
 .wk.R2{border-left:4px solid var(--r2)} .wk.Claude{border-left:4px solid var(--claude)} .tile.main{border-left:4px solid var(--r2)}
@@ -280,7 +281,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109193433';
+<script>/*build*/const WIRE_BUILD='20261109200406';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -392,11 +393,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
       <div class="chips" role="group" aria-label="Show">
         <button class="chip" id="f-all" aria-pressed="true" data-f="all">Everyone</button>
         <button class="chip" id="f-r2" aria-pressed="false" data-f="R2">R2</button>
+        <button class="chip" id="f-codex" aria-pressed="false" data-f="Codex">Codex</button>
         <button class="chip" id="f-claude" aria-pressed="false" data-f="Claude">Claude</button>
         <button class="chip" id="f-kevin" aria-pressed="false" data-f="Kevin">Kevin</button>
       </div>
     </div>
-    <div class="lanes-head" aria-hidden="true"><span class="l">R2 · builds</span><span class="c">You</span><span class="r">Claude · reviews</span></div>
+    <div class="lanes-head" aria-hidden="true"><span class="l">R2 + Codex · build</span><span class="c">You</span><span class="r">Claude · reviews</span></div>
+    <p class="note" id="codexnote" hidden></p>
     <div class="feed" id="feed"></div>
     <button class="chip more" id="more" hidden>Show older</button>
   </section>
@@ -428,7 +431,7 @@ let DATA = null;
 const fmtDay = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Puerto_Rico' });
 const fmtTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Puerto_Rico' });
 const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
-const KIND = { review: 'Review', report: 'Report', brief: 'Brief', decision: 'Decision', inbox: 'Instruction', status: 'Status', merge: 'Merged', update: 'Update' };
+const KIND = { review: 'Review', report: 'Report', brief: 'Brief', decision: 'Decision', inbox: 'Instruction', status: 'Status', merge: 'Merged', update: 'Update', code: 'Kortana commit' };
 let filter = 'all', shown = 40;
 
 async function gh(path, raw) {
@@ -466,6 +469,14 @@ async function commitDetail(sha) {
   return d;
 }
 
+
+// Codex works in the Kortana repo (branches only), so read its commits too. Skipped quietly if the token can't see that repo.
+const KREPO='https://api.github.com/repos/'+OWNER+'/Kortana';let codexNote='';
+async function loadCodex(){try{const br=await gh(KREPO+'/branches?per_page=30');const seen=new Set(),out=[];
+  const lists=await Promise.all(br.map(b=>gh(KREPO+'/commits?sha='+encodeURIComponent(b.name)+'&per_page=15').then(cs=>cs.map(c=>[b.name,c])).catch(()=>[])));
+  for(const [bn,c] of lists.flat()){if(seen.has(c.sha))continue;seen.add(c.sha);
+    out.push({actor:'Codex',kind:'code',t:c.commit.author.date,title:c.commit.message.split('\n')[0],detail:c.commit.message.split('\n')[0]+'  ·  branch '+bn,links:[{label:'view commit',href:'https://github.com/'+OWNER+'/Kortana/commit/'+c.sha}]})}
+  codexNote='';return out}catch(e){codexNote=(e.message==='auth'||e.message==='not-found')?'To see Codex here, give your Wire token read access to the Kortana repo.':'';return[]}}
 async function load() {
   const commits = await gh('/commits?sha=main&per_page=100');
   const head = commits[0] && commits[0].sha;
@@ -491,6 +502,7 @@ async function load() {
     const kind = files.length === 1 && files[0] === 'STATUS.md' ? 'status' : files.some(f => f.startsWith('reviews/')) ? 'review' : files.some(f => f.startsWith('reports/')) ? 'report' : files.some(f => f.startsWith('briefs/')) ? 'brief' : files.some(f => f.startsWith('decisions/')) ? 'decision' : files.includes('INBOX-R2.md') ? 'inbox' : 'update';
     events.push({ actor, relayed, kind, t: when, title: subj, detail, links: links.slice(0, 3) });
   }
+  const cx = await loadCodex(); for (const e of cx) events.push(e);
   events.sort((a, b) => b.t.localeCompare(a.t));
   const now = {};
   for (const l of section(statusMd, 'Now').split('\n')) { const mm = l.match(/^- (\w[\w ]*?):\s*(.*)/); if (mm) now[mm[1].trim()] = linkMd(mm[2])[0]; }
@@ -506,7 +518,7 @@ async function load() {
       return { action: linkMd(act)[0], detail: rest.replace(/\s*\(~[^)]+\)/, '').replace(/\s*\[[^\]]+\]\([^)]+\)/g, '').replace(/\*\*/g, '').trim(), eta: eta ? eta[1] : '', links, raw: line };
     });
   };
-  const changed = head !== lastHead; lastHead = head;
+  const sig = head + '|' + (cx[0] ? cx.map(e => e.t).sort().pop() : ''); const changed = sig !== lastHead; lastHead = sig;
   DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd) };
   return changed;
 }
@@ -620,6 +632,10 @@ function renderFeed() {if(!DATA)return;
   document.getElementById('more').hidden = list.length <= shown;
 }
 
+
+function setBadge(){if(!DATA)return;const n=(DATA.waiting||[]).length+(DATA.review||[]).length+(DATA.ready||[]).length;
+  try{if(navigator.setAppBadge){n?navigator.setAppBadge(n):navigator.clearAppBadge()}}catch{}
+  const h=document.getElementById('codexnote');if(h){h.textContent=codexNote;h.hidden=!codexNote}}
 function setConn(state, text) {
   const s = document.getElementById('stamp'); s.textContent = text; s.dataset.state = state;
 }
@@ -628,7 +644,7 @@ async function refresh(first) {
   try {
     setConn('busy', first ? 'Loading from GitHub…' : document.getElementById('stamp').textContent);
     const changed = await load();
-    renderTop(); if (changed || first) renderFeed();
+    renderTop(); if (changed || first) renderFeed(); setBadge();
     setConn('ok', 'Live · checked ' + fmtTime.format(new Date()) + ' · refreshes every minute');
   } catch (e) {
     if (e.message === 'auth' || e.message === 'not-found') { showSetup('GitHub refused the token (' + e.status + '). Check that it has read access to ' + OWNER + '/' + REPO + ', or create a new one.'); return; }
