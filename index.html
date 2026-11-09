@@ -303,7 +303,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109201606';
+<script>/*build*/const WIRE_BUILD='20261109202153';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -349,7 +349,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 
   <section class="panel tasks" id="tasksp" aria-labelledby="tasks-h">
     <h2 id="tasks-h">Tasks</h2>
-    <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog and drag it onto an AI later (on the phone, press and hold a card, then drag). Codex tasks go through R2. Live-change approvals still go in R2's chat.</p>
+    <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog and drag it onto an AI later. You can also drag a task from one AI to another, or back to your backlog (on the phone, press and hold a card, then drag). Codex tasks go through R2. Live-change approvals still go in R2's chat.</p>
     <div class="board" id="board">
       <div class="lane backlog" data-to="backlog"><h3>Your backlog</h3><div id="bl"></div>
         <form class="addtask" id="addtask"><input id="newtask" maxlength="200" placeholder="New task…" aria-label="New task"><select id="newwho" aria-label="Who does it"><option value="backlog">Backlog</option><option value="R2">R2</option><option value="Codex">Codex</option><option value="Claude">Claude</option></select><button type="submit">Add</button></form></div>
@@ -887,31 +887,35 @@ const openSt=st=>!/^(done|superseded)/i.test(st);
 function laneItems(to){if(!DATA)return[];if(to==='Claude')return (DATA.cinbox||[]).filter(i=>openSt(i.status));
   const all=(DATA.inbox||[]).filter(i=>openSt(i.status));return to==='Codex'?all.filter(i=>/for codex/i.test(i.title)):all.filter(i=>!/for codex/i.test(i.title))}
 function stLabel(to,st){const who=to==='Codex'?'R2/Codex':to;return /^taken|^in progress|^working/i.test(st)?['taken',who+' is on it']:/^new/i.test(st)?['new','Sent · not picked up yet']:['',st]}
-function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DATA.inbox,DATA.cinbox]);if(key===taskKey)return;taskKey=key;
+function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DATA.inbox,DATA.cinbox,(DATA.events||[]).find(e=>e.actor==='Codex')?.t,Math.floor(Date.now()/600000)]);if(key===taskKey)return;taskKey=key;
   const bl=document.getElementById('bl');bl.replaceChildren();
   if(!(DATA.backlog||[]).length)bl.append(el('p','note','No tasks yet. Add one below.'));
   (DATA.backlog||[]).forEach(t=>{const c=el('div','tk');c.dataset.task=t;const g=el('span','grip','⠿');g.title='Drag onto R2, Codex or Claude';g.setAttribute('aria-hidden','true');
     const sel=el('select');sel.setAttribute('aria-label','Send task to');[['','Send to…'],['R2','R2'],['Codex','Codex'],['Claude','Claude'],['del','Remove']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;sel.append(o)});
-    sel.addEventListener('change',()=>{const v=sel.value;sel.value='';if(v==='del')removeTask(t);else if(v)askAssign(t,v,true)});
-    g.addEventListener('pointerdown',e=>startDrag(e,c,t));c.addEventListener('pointerdown',e=>armDrag(e,c,t));c.append(g,el('span','tx',t),sel);bl.append(c)});
+    sel.addEventListener('change',()=>{const v=sel.value;sel.value='';if(v==='del')removeTask(t);else if(v)askAssign({t,src:'backlog'},v)});
+    const pl={t,src:'backlog'};g.addEventListener('pointerdown',e=>startDrag(e,c,pl));c.addEventListener('pointerdown',e=>armDrag(e,c,pl));c.append(g,el('span','tx',t),sel);bl.append(c)});
   for(const to of ['R2','Codex','Claude']){const box=document.getElementById('ln-'+to);box.replaceChildren();const items=laneItems(to).slice(0,6);
-    if(!items.length)box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
-    for(const it of items){const c=el('div','tk');const tx=el('span','tx',it.title.replace(/\s*\((Kevin via Wire|Kevin)\)\s*$/,'').replace(/^[\d-]+ [\d:]+ · /,'').replace(/\s*—\s*New\s*$/,''));const [cls,lab]=stLabel(to,it.status);tx.append(el('span','st '+cls,lab));c.append(tx);box.append(c)}}}
+    if(to==='Codex'){const cx=(DATA.events||[]).filter(e=>e.actor==='Codex');if(cx.length){const last=cx[0],mins=Math.round((Date.now()-new Date(last.t))/60000);const ago=mins<60?mins+' min ago':Math.round(mins/60)+' h ago';
+      const br=(last.detail.match(/branch (.+)$/)||[])[1]||'';const active=mins<=90;const c=el('div','tk');const tx=el('span','tx',(active?'Working on Kortana':'Kortana · idle')+(br?' ('+br+')':''));
+      tx.append(el('span','st '+(active?'taken':''),'Last commit '+ago+': '+last.title.slice(0,60)));c.append(tx);box.append(c)}}
+    if(!items.length&&!(to==='Codex'&&box.childElementCount))box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
+    for(const it of items){const c=el('div','tk');const clean=it.title.replace(/\s*\((Kevin via Wire|Kevin|Kevin, relayed by Claude)\)\s*$/,'').replace(/^[\d-]+ [\d:]+ · /,'').replace(/^\d{1,2}:\d{2} · /,'').replace(/\s*—\s*(New|Taken)\s*$/,'');const tx=el('span','tx',clean);const [cls,lab]=stLabel(to,it.status);tx.append(el('span','st '+cls,lab));c.append(tx);
+      const pl={t:clean.replace(/^For Codex:\s*/i,''),src:'inbox',from:to,head:it.title,taken:cls==='taken'};c.title='Drag to give this to someone else, or back to your backlog';c.addEventListener('pointerdown',e=>armDrag(e,c,pl));box.append(c)}}}
 let dragging=false;
 document.addEventListener('touchmove',e=>{if(dragging)e.preventDefault()},{passive:false});
-function armDrag(e,card,t){if(e.target.closest('select,button,.grip'))return;const x0=e.clientX,y0=e.clientY,touch=e.pointerType!=='mouse';let timer=null,done=false;
+function armDrag(e,card,pl){if(e.target.closest('select,button,.grip'))return;const x0=e.clientX,y0=e.clientY,touch=e.pointerType!=='mouse';let timer=null,done=false;
   const end=()=>{done=true;clearTimeout(timer);document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',end);document.removeEventListener('pointercancel',end);card.style.transform=''};
-  const go=ev=>{end();startDrag(ev||e,card,t)};
+  const go=ev=>{end();startDrag(ev||e,card,pl)};
   const mv=ev=>{const d=Math.hypot(ev.clientX-x0,ev.clientY-y0);if(touch){if(d>8)end()}else if(d>5)go(ev)};
   if(touch)timer=setTimeout(()=>{if(!done){try{navigator.vibrate&&navigator.vibrate(15)}catch{}go(e)}},250);
   document.addEventListener('pointermove',mv);document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end)}
-function startDrag(e,card,t){if(e.cancelable)e.preventDefault();dragging=true;card.classList.add('drag-src');const gh_=card.cloneNode(true);gh_.classList.remove('drag-src');gh_.classList.add('ghost');document.body.append(gh_);let over=null,lx=e.clientX,ly=e.clientY;
+function startDrag(e,card,pl){if(e.cancelable)e.preventDefault();dragging=true;card.classList.add('drag-src');const gh_=card.cloneNode(true);gh_.classList.remove('drag-src');gh_.classList.add('ghost');document.body.append(gh_);let over=null,lx=e.clientX,ly=e.clientY;
   const pos=(x,y)=>{lx=x;ly=y;gh_.style.left=(x-20)+'px';gh_.style.top=(y-20)+'px';gh_.hidden=true;const tgt=document.elementFromPoint(x,y);gh_.hidden=false;const ln=tgt&&tgt.closest('.lane[data-to]');
-    if(over&&over!==ln)over.classList.remove('over');over=ln&&ln.dataset.to!=='backlog'?ln:null;if(over)over.classList.add('over');
+    if(over&&over!==ln)over.classList.remove('over');over=ln&&!(ln.dataset.to==='backlog'&&pl.src==='backlog')&&ln.dataset.to!==pl.from?ln:null;if(over)over.classList.add('over');
     if(y<60)scrollBy(0,-14);else if(y>innerHeight-60)scrollBy(0,14)};
   const mv=ev=>pos(ev.clientX,ev.clientY);const tm=ev=>{const p=ev.touches[0];if(p)pos(p.clientX,p.clientY)};
   const up=()=>{dragging=false;document.removeEventListener('pointermove',mv);document.removeEventListener('touchmove',tm);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);document.removeEventListener('touchend',up);gh_.remove();card.classList.remove('drag-src');
-    if(over){over.classList.remove('over');askAssign(t,over.dataset.to,true)}};
+    if(over){over.classList.remove('over');askAssign(pl,over.dataset.to)}};
   pos(lx,ly);document.addEventListener('pointermove',mv);document.addEventListener('touchmove',tm,{passive:true});document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);document.addEventListener('touchend',up)}
 async function editBacklog(fn,msg){await withRetry(async()=>{let f;try{f=await getFile('TASKS.md')}catch(e){if(e.message!=='not-found')throw e;f={sha:undefined,text:'# Tasks\n\nKevin\'s backlog. The Wire adds and removes lines here; dragging a task to an AI moves it into that AI\'s inbox.\n\n## Backlog\n'}}
   const lines=f.text.split('\n');fn(lines);await putFile('TASKS.md',lines.join('\n'),f.sha,msg)})}
@@ -926,9 +930,25 @@ async function sendToClaude(title,body){const stamp=prStamp();const hm=stamp.sli
     const s=f.text,i=s.indexOf('\n---\n');const item='\n## '+hm+' · '+safe+' (Kevin via Wire)\n\nFrom: Kevin (via Wire, his own GitHub account)\n\nStatus: **New**\n\n'+body.trim()+'\n\n---\n';
     await putFile('INBOX-CLAUDE.md',i<0?s+item:s.slice(0,i+5)+item+s.slice(i+5).replace(/^\n+/,'\n'),f.sha,'[for-claude] Kevin task: '+safe)})}
 let pending=null;
-function askAssign(t,to,fromBacklog){pending={t,to,fromBacklog};const b=document.getElementById('tconfirm');document.getElementById('tcq').textContent='Send “'+t+'” to '+to+(to==='Codex'?' (through R2)':'')+'?';b.hidden=false;b.scrollIntoView({block:'nearest',behavior:'smooth'})}
-document.getElementById('tcyes').addEventListener('click',()=>{const p=pending;pending=null;document.getElementById('tconfirm').hidden=true;if(p)assign(p.t,p.to,p.fromBacklog)});
+function askAssign(pl,to){pending={pl,to};const b=document.getElementById('tconfirm');const dest=to==='backlog'?'your backlog':to+(to==='Codex'?' (through R2)':'');
+  document.getElementById('tcq').textContent=pl.src==='inbox'?(pl.taken?pl.from+' already started “'+pl.t+'”. Move it to '+dest+' anyway? '+pl.from+' will be told to stop.':'Move “'+pl.t+'” from '+pl.from+' to '+dest+'?'):'Send “'+pl.t+'” to '+dest+'?';b.hidden=false;b.scrollIntoView({block:'nearest',behavior:'smooth'})}
+document.getElementById('tcyes').addEventListener('click',()=>{const p=pending;pending=null;document.getElementById('tconfirm').hidden=true;if(p)(p.pl.src==='inbox'?reassign(p.pl,p.to):assign(p.pl.t,p.to,true))});
 document.getElementById('tcno').addEventListener('click',()=>{pending=null;document.getElementById('tconfirm').hidden=true;setTaskSt('Cancelled.')});
+async function supersede(file,head,to,tag){await withRetry(async()=>{const f=await getFile(file);const ls=f.text.split('\n');const k=ls.indexOf('## '+head);if(k<0)return;
+  let e=k+1;while(e<ls.length&&!ls[e].startsWith('## ')&&ls[e].trim()!=='---')e++;
+  const note='Status: **Superseded** (Kevin moved this to '+to+' from the Wire on '+prStamp().slice(0,16).replace('T',' ')+'. Stop work on it.)';
+  const si=ls.slice(k+1,e).findIndex(l=>/^Status:\s*\*\*/.test(l));if(si>=0)ls[k+1+si]=note;else ls.splice(k+1,0,'',note);
+  ls[k]=ls[k].replace(/\s*—\s*(New|Taken)\s*$/,' — Superseded');
+  await putFile(file,ls.join('\n'),f.sha,tag+' Reassigned to '+to+': '+head.slice(0,50))})}
+async function reassign(pl,to){setTaskSt('Moving to '+(to==='backlog'?'your backlog':to)+'…');
+  try{const why='(Kevin moved this from '+pl.from+' on the Wire task board.)';
+    if(to==='backlog')await editBacklog(ls=>{let k=ls.findIndex(l=>/^## Backlog\s*$/.test(l));if(k<0){ls.push('## Backlog');k=ls.length-1}let j=k+1;while(j<ls.length&&ls[j].startsWith('- '))j++;ls.splice(j,0,'- '+pl.t)},'[kevin-task] Back to backlog: '+pl.t.slice(0,50));
+    else if(to==='Claude')await sendToClaude(pl.t,'Kevin assigned this task to Claude from the Wire task board. '+why+'\n\n'+pl.t);
+    else if(to==='Codex')await sendToInbox('For Codex: '+pl.t,'Kevin assigned this task to **Codex** from the Wire task board. '+why+' R2: hand it to the Codex task, supervise it under protocol 11, and keep this item\'s Status current.\n\n'+pl.t,'[kevin-msg]');
+    else await sendToInbox(pl.t,'Kevin assigned this task to R2 from the Wire task board. '+why+' Mark it Taken when you start.\n\n'+pl.t,'[kevin-msg]');
+    await supersede(pl.from==='Claude'?'INBOX-CLAUDE.md':'INBOX-R2.md',pl.head,to==='backlog'?'his backlog':to,pl.from==='Claude'?'[for-claude]':'[kevin-msg]');
+    setTaskSt('Moved. '+pl.from+' is told to stop.');taskKey='';setTimeout(()=>refresh(false),1200)}
+  catch(err){setTaskSt(err.message==='nowrite'?'Your token is read-only.':'Could not move ('+err.message+').')}}
 async function assign(t,to,fromBacklog=true){setTaskSt('Sending to '+to+'…');const card=[...document.querySelectorAll('#bl .tk')].find(c=>c.dataset.task===t);if(card)card.style.opacity='.4';
   try{if(to==='Claude')await sendToClaude(t,'Kevin assigned this task to Claude from the Wire task board:\n\n'+t);
     else if(to==='Codex')await sendToInbox('For Codex: '+t,'Kevin assigned this task to **Codex** from the Wire task board. R2: hand it to the Codex task, supervise it under protocol 11 (branch only, Claude reviews, Kevin approves merges), and keep this item\'s Status current.\n\n'+t,'[kevin-msg]');
