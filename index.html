@@ -204,6 +204,11 @@ code{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px
 .rd button.go{background:var(--claude);color:var(--bg)}
 .rd button.go[data-arm="1"]{background:var(--ink);border-color:var(--ink)}
 .rd .note{font:12px var(--mono);color:var(--muted)}
+.pairbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px}
+.pairbox .in{background:var(--surface);color:var(--ink);border-radius:12px;padding:18px;max-width:360px;width:100%;display:grid;gap:12px;text-align:center}
+.pairbox .qr{background:#fff;padding:14px;border-radius:8px;justify-self:center;line-height:0}
+.pairbox p{margin:0;font-size:14px;color:var(--muted)}
+.pairbox button{font:600 14px var(--body);padding:10px 14px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
 </style>
 
 
@@ -324,7 +329,7 @@ code{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px
     <button class="chip more" id="more" hidden>Show older</button>
   </section>
 
-  <p class="foot">Reads <span style="font-family:var(--mono)">v7skull/kevin-r2-claude-hub</span> directly from GitHub every minute, with your read-only token stored only in this browser. Times are when each item reached GitHub, in Puerto Rico time. <button class="btn ghost" id="forget" type="button" style="padding:3px 10px;font-size:12px">Remove token</button></p>
+  <p class="foot">Reads <span style="font-family:var(--mono)">v7skull/kevin-r2-claude-hub</span> directly from GitHub every minute, with your token stored only in this browser. Times are when each item reached GitHub, in Puerto Rico time. <button class="btn ghost" id="pair" type="button" style="padding:3px 10px;font-size:12px">Pair a phone</button> <button class="btn ghost" id="forget" type="button" style="padding:3px 10px;font-size:12px">Remove token</button></p>
 </div>
 
 <script>
@@ -342,6 +347,8 @@ const store = {
   del(k) { try { localStorage.removeItem(k); } catch {} }
 };
 let token = store.get('wire.token', '');
+// Pairing: a QR from another device opens this page with #t=<token>. The fragment is never sent to any server; it is saved locally and removed from the address bar at once.
+(function(){try{const m=location.hash.match(/^#t=([A-Za-z0-9_]+)$/);if(m){token=m[1];store.set('wire.token',token);history.replaceState(null,'',location.pathname+location.search)}}catch{}})();
 let commitCache = store.get('wire.commits', {}); // sha -> {files, added}
 let lastHead = '';
 let DATA = null;
@@ -736,6 +743,16 @@ function renderReady(){const items=DATA.ready||[];const key=items.map(i=>i.raw).
 document.getElementById('mform').addEventListener('submit',async e=>{e.preventDefault();const t=document.getElementById('mtext'),n=document.getElementById('mnote'),b=document.getElementById('msend');const v=t.value.trim();if(!v){n.textContent='Write a message first.';return}
   b.disabled=true;n.textContent='Sending…';const f=document.getElementById('mform');try{await sendToInbox(f.dataset.title||v.split('\n')[0],v,'[kevin-msg]',f.dataset.raw||null);delete f.dataset.raw;delete f.dataset.title;t.value='';n.textContent='Sent to R2\'s inbox. Claude sees it too.';setTimeout(()=>refresh(false),1500)}
   catch(err){n.textContent=err.message==='nowrite'?'Your token is read-only. See "Enable check-offs" above.':'Could not send ('+err.message+'). Try again.'}finally{b.disabled=false}});
+
+document.getElementById('pair').addEventListener('click',async()=>{
+  if(!token)return;const box=el('div','pairbox');const inn=el('div','in');const qr=el('div','qr');
+  inn.append(el('b',null,'Pair your phone'),el('p',null,'Open your phone camera, point it at this code, and tap the link. Your phone opens the Wire already signed in. Close this as soon as you are done; anyone who sees the code can use your token.'),qr);
+  const close=el('button',null,'Done, close');close.type='button';close.addEventListener('click',()=>box.remove());inn.append(close);box.append(inn);box.addEventListener('click',e=>{if(e.target===box)box.remove()});document.body.append(box);
+  const url=location.origin+location.pathname+'#t='+token;
+  try{if(!window.QRCode)await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';sc.onload=res;sc.onerror=rej;document.head.append(sc)});
+    new QRCode(qr,{text:url,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});setTimeout(()=>{if(document.body.contains(box))box.remove()},120000)}
+  catch{qr.replaceWith(el('p',null,'The QR tool could not load. Check your internet connection and try again.'))}
+});
 if (!token) showSetup(); else refresh(true);
 setInterval(() => { if (token && !document.hidden) refresh(false); }, REFRESH_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && token) refresh(false); });
