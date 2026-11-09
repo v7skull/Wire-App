@@ -191,8 +191,14 @@ code{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px
 .msg .sbtn{font:600 14px var(--body);padding:10px 14px;min-height:42px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
 .msg .note,.revitem .note{font:12px var(--mono);color:var(--muted)}
 .msg .hint,.review .hint{margin:10px 0 0;font-size:13px;color:var(--muted)}
-.zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:grid;place-items:center;z-index:50;cursor:zoom-out;padding:16px}
-.zoom img{max-width:100%;max-height:100%}
+.zoom{position:fixed;inset:0;background:#0b0d12;z-index:50;display:flex;flex-direction:column}
+.zoom .zbar{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;color:#fff;flex:none}
+.zoom .zbar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.zoom .zbar button{min-width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:16px;cursor:pointer}
+.zoom .zscroll{flex:1;overflow:auto;display:flex;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
+.zoom .zscroll img{margin:auto;display:block;max-width:none;max-height:none;cursor:zoom-in;user-select:none}
+.zoom.fit .zscroll img{max-width:calc(100vw - 24px);max-height:calc(100dvh - 90px);width:auto;height:auto}
+.zoom .zhint{color:rgba(255,255,255,.6);font-size:12px;text-align:center;padding:6px 0 calc(8px + env(safe-area-inset-bottom));flex:none}
 .ready{border-left:4px solid var(--claude)}
 .ready h2{color:var(--claude)}
 .rd{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
@@ -274,7 +280,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109180304';
+<script>/*build*/const WIRE_BUILD='20261109193433';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -773,6 +779,23 @@ function renderScore(){if(!DATA)return;const box=document.getElementById('score'
 function parseReview(md){if(!/^## Review images\s*$/m.test(md))return [];return section(md,'Review images').split('\n').filter(l=>l.startsWith('- **')).map(l=>{
   const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]?\s*(.*)$/)||[,l,''];const opts=[];m[2].replace(/\[([^\]]+)\]\(([^)]+\.(?:png|jpe?g|webp|gif))\)/gi,(_,a,b)=>{opts.push({label:a,path:b.replace(/^\.?\//,'')});return ''});
   return {raw:l,q:m[1],detail:m[2].replace(/\s*\[[^\]]+\]\([^)]+\)/g,'').trim(),opts}})}
+function openZoom(opts,idx){document.querySelector('.zoom')?.remove();
+  const z=el('div','zoom fit');const bar=el('div','zbar');const title=el('b');
+  const mk=(t,l,f)=>{const b=el('button',null,t);b.type='button';b.setAttribute('aria-label',l);b.addEventListener('click',e=>{e.stopPropagation();f()});return b};
+  const sc=el('div','zscroll');const zi=el('img');sc.append(zi);const hint=el('div','zhint');
+  let scale=0;// 0 = fit to screen
+  const apply=()=>{if(!scale){z.classList.add('fit');zi.style.width='';hint.textContent='Tap image or + to zoom · ‹ › to compare'}else{z.classList.remove('fit');zi.style.width=Math.round(zi.naturalWidth*scale)+'px';hint.textContent='Drag/scroll to move around · tap image to fit'}};
+  const show=i=>{idx=(i+opts.length)%opts.length;const o=opts[idx];title.textContent=o.label+(opts.length>1?'  ('+(idx+1)+'/'+opts.length+')':'');zi.alt=o.label;scale=0;apply();imgURL(o.path).then(u=>{zi.src=u}).catch(()=>{hint.textContent='Image could not load'})};
+  const fitScale=()=>Math.min((innerWidth-24)/(zi.naturalWidth||1),(innerHeight-90)/(zi.naturalHeight||1));
+  const zoomBy=f=>{const cx=sc.scrollLeft+sc.clientWidth/2,cy=sc.scrollTop+sc.clientHeight/2,old=zi.offsetWidth||1;let s=(scale||fitScale())*f;s=Math.max(fitScale(),Math.min(s,4));scale=s<=fitScale()*1.01?0:s;apply();const r=(zi.offsetWidth||1)/old;sc.scrollLeft=cx*r-sc.clientWidth/2;sc.scrollTop=cy*r-sc.clientHeight/2};
+  zi.addEventListener('click',e=>{if(scale){scale=0;apply();return}const rect=zi.getBoundingClientRect(),px=(e.clientX-rect.left)/rect.width,py=(e.clientY-rect.top)/rect.height;scale=Math.max(1,fitScale()*2.5);apply();requestAnimationFrame(()=>{sc.scrollLeft=px*zi.offsetWidth-sc.clientWidth/2;sc.scrollTop=py*zi.offsetHeight-sc.clientHeight/2})});
+  const close=()=>{z.remove();document.removeEventListener('keydown',key)};
+  const key=e=>{if(e.key==='Escape')close();else if(e.key==='ArrowRight')show(idx+1);else if(e.key==='ArrowLeft')show(idx-1);else if(e.key==='+'||e.key==='=')zoomBy(1.5);else if(e.key==='-')zoomBy(1/1.5)};
+  document.addEventListener('keydown',key);
+  sc.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();zoomBy(e.deltaY<0?1.2:1/1.2)}},{passive:false});
+  bar.append(title);if(opts.length>1)bar.append(mk('‹','Previous option',()=>show(idx-1)),mk('›','Next option',()=>show(idx+1)));
+  bar.append(mk('−','Zoom out',()=>zoomBy(1/1.5)),mk('+','Zoom in',()=>zoomBy(1.5)),mk('✕','Close',close));
+  z.append(bar,sc,hint);document.body.append(z);show(idx)}
 const imgCache={};
 async function imgURL(path){if(imgCache[path])return imgCache[path];const r=await fetch(API+'/contents/'+path.split('/').map(encodeURIComponent).join('/')+'?ref=main',{headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github.raw','X-GitHub-Api-Version':'2022-11-28'}});if(!r.ok)throw new Error('HTTP '+r.status);return imgCache[path]=URL.createObjectURL(await r.blob())}
 let revKey='';
@@ -781,7 +804,7 @@ function renderReview(){if(!DATA)return;const items=DATA.review||[];const p=docu
   for(const it of items){const wrap=el('div','revitem');wrap.append(el('div','q',it.q));if(it.detail)wrap.append(el('div','d',it.detail));
     const grid=el('div','revgrid');const note=el('textarea');note.rows=2;note.placeholder='Optional note for R2 (changes you want)';note.setAttribute('aria-label','Optional note for R2');const st=el('span','note');
     for(const o of it.opts){const c=el('div','revopt');const img=el('img');img.alt=o.label;img.loading='lazy';imgURL(o.path).then(u=>img.src=u).catch(()=>{img.alt='Image could not load: '+o.label});
-      img.addEventListener('click',()=>{const z=el('div','zoom');const zi=el('img');zi.src=img.src;zi.alt=o.label;z.append(zi);z.addEventListener('click',()=>z.remove());document.body.append(z)});
+      img.addEventListener('click',()=>openZoom(it.opts,it.opts.indexOf(o)));
       const rb=el('div','rb');rb.append(el('b',null,o.label));const b=el('button',null,'Pick this');b.type='button';
       b.addEventListener('click',async()=>{if(b.dataset.arm!=='1'){b.dataset.arm='1';b.textContent='Tap again to pick';return}b.disabled=true;b.textContent='Saving…';
         try{await sendToInbox('Picked: '+o.label+' for "'+it.q+'"',"Kevin picked **"+o.label+"** for: "+it.q+(note.value.trim()?"\n\nKevin's note: "+note.value.trim():''),'[kevin-pick]',it.raw);st.textContent='Sent. R2 and Claude will see it.';setTimeout(()=>refresh(false),1500)}
