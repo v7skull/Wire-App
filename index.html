@@ -242,6 +242,9 @@ body{min-height:100vh;background:
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.panel,.tile,.wk,.card,.newbar,.revopt,.chip,.day{background:var(--surface)}}
 @media (prefers-reduced-transparency:reduce){.panel,.tile,.wk,.card,.newbar,.revopt,.chip,.day{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
 
+#scanbox{display:grid;gap:8px;margin-top:10px}
+#scanvid{width:100%;max-width:360px;border-radius:14px;background:#000}
+.scanhint{font-size:13px;color:var(--muted);margin:8px 0 0}
 </style>
 
 
@@ -262,7 +265,9 @@ body{min-height:100vh;background:
   </div>
   <label for="token" class="sub" style="margin:0">Token</label>
   <input id="token" type="password" autocomplete="off" placeholder="github_pat_…">
-  <div class="row"><button class="btn" id="save-token" type="button">Connect</button></div>
+  <div class="row"><button class="btn" id="save-token" type="button">Connect</button> <button class="btn" id="scan" type="button">Scan pairing code</button></div>
+  <p class="scanhint">On your phone: on your PC's Wire, click <b>Pair a phone</b> at the bottom, then tap <b>Scan pairing code</b> here and point the camera at it.</p>
+  <div id="scanbox" hidden><video id="scanvid" playsinline muted></video><button class="btn" id="scanstop" type="button">Cancel</button></div>
   <p class="err" id="setup-msg"></p>
 </div>
 
@@ -786,6 +791,22 @@ document.getElementById('pair').addEventListener('click',async()=>{
   try{if(!window.QRCode)await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';sc.onload=res;sc.onerror=rej;document.head.append(sc)});
     new QRCode(qr,{text:url,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});setTimeout(()=>{if(document.body.contains(box))box.remove()},120000)}
   catch{qr.replaceWith(el('p',null,'The QR tool could not load. Check your internet connection and try again.'))}
+});
+
+let scanStream=null,scanTimer=null;
+function stopScan(){try{scanStream&&scanStream.getTracks().forEach(t=>t.stop())}catch{}scanStream=null;clearInterval(scanTimer);document.getElementById('scanbox').hidden=true}
+document.getElementById('scanstop').addEventListener('click',stopScan);
+document.getElementById('scan').addEventListener('click',async()=>{
+  const msg=document.getElementById('setup-msg');msg.textContent='';
+  try{if(!window.jsQR)await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('the scanner tool could not load; check your internet'));document.head.append(sc)});
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+  }catch(e){msg.textContent=e&&e.name==='NotAllowedError'?'Camera permission was blocked. Allow the camera for this site and try again.':'Could not start the camera scanner ('+(e&&e.message||e)+').';return}
+  const box=document.getElementById('scanbox'),v=document.getElementById('scanvid');box.hidden=false;v.srcObject=scanStream;await v.play().catch(()=>{});
+  const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
+  scanTimer=setInterval(()=>{if(!v.videoWidth)return;const w=Math.min(640,v.videoWidth),h=Math.round(v.videoHeight*w/v.videoWidth);c.width=w;c.height=h;x.drawImage(v,0,0,w,h);
+    const r=jsQR(x.getImageData(0,0,w,h).data,w,h);if(!r||!r.data)return;const m=r.data.match(/#t=([A-Za-z0-9_]+)$/);
+    if(!m){msg.textContent='That QR code is not a Wire pairing code.';return}
+    stopScan();token=m[1];store.set('wire.token',token);document.getElementById('setup').hidden=true;document.getElementById('app').hidden=false;refresh(true)},250);
 });
 if (!token) showSetup(); else refresh(true);
 setInterval(() => { if (token && !document.hidden) refresh(false); }, REFRESH_MS);
