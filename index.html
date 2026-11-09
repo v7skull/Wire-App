@@ -268,7 +268,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109161420';
+<script>/*build*/const WIRE_BUILD='20261109164317';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -529,7 +529,7 @@ async function markDone(item,noteText){
     await putFile('CHANGELOG.md',text,f.sha,'[kevin-done] log: '+label);
   });
 }
-function renderWaiting(w){
+function renderWaiting(w){if(!DATA)return;
   const ul=document.getElementById('waiting');ul.replaceChildren();
   if(w==null){ul.append(el('li','empty','R2 has not added the Waiting on Kevin list to STATUS.md yet.'));return}
   if(!w.length){ul.append(el('li','empty','Nothing is waiting on you.'));return}
@@ -561,7 +561,7 @@ function renderWorking(){
   }
 }
 setInterval(renderWorking,60000);
-function renderTop() {
+function renderTop() {if(!DATA)return;
   renderWorking();
   renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderNew();checkAlerts();
   const dl = document.getElementById('now'); dl.replaceChildren();
@@ -585,7 +585,7 @@ function renderTop() {
   if (ans.length) { const li = el('li'); li.append(el('span', 'pill answered', ans.length + ' answered'), el('span', 't', 'Latest: ' + ans[0].text.replace(/^Claude answered\s*/, ''))); q.append(li); }
 }
 
-function renderFeed() {
+function renderFeed() {if(!DATA)return;
   const feed = document.getElementById('feed'); feed.replaceChildren();
   const list = DATA.events.filter(e => filter === 'all' || e.actor === filter);
   let lastDay = '';
@@ -732,13 +732,13 @@ function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)
 function notifyKevin(msg){if(!alertsOn)return;beep();document.title='(!) Wire · '+msg.slice(0,40);
   try{if('Notification' in window&&Notification.permission==='granted')new Notification('R2 ↔ Claude Wire',{body:msg})}catch{}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.title='R2 ↔ Claude Wire'});
-function checkAlerts(){
+function checkAlerts(){if(!DATA)return;
   const w=(DATA.waiting||[]).map(x=>x.raw);const kev=DATA.events.filter(e=>/^\[for-kevin\]/.test(e.title)).map(e=>e.t);
   if(prevWaiting){const added=(DATA.waiting||[]).filter(x=>!prevWaiting.includes(x.raw));if(added.length)notifyKevin('Waiting on you: '+added[0].action)}
   if(prevKevinEv&&kev.some(t=>!prevKevinEv.includes(t))&&!(prevWaiting&&(DATA.waiting||[]).some(x=>!prevWaiting.includes(x.raw))))notifyKevin('Something new needs your look');
   prevWaiting=w;prevKevinEv=kev;
 }
-function renderNew(){const bar=document.getElementById('newbar');const n=DATA.events.filter(e=>new Date(e.t).getTime()>lastSeen).length;
+function renderNew(){if(!DATA)return;const bar=document.getElementById('newbar');const n=DATA.events.filter(e=>new Date(e.t).getTime()>lastSeen).length;
   document.getElementById('alerts').textContent=alertsOn?'Alerts on':'Turn on alerts';
   if(!lastSeen){bar.hidden=true;return}bar.hidden=!n&&alertsOn;
   document.getElementById('newtxt').textContent=n?n+' new since '+fmtDay.format(new Date(lastSeen))+', '+fmtTime.format(new Date(lastSeen)):'Nothing new since your last look.'}
@@ -750,7 +750,7 @@ if(!lastSeen){store.set('wire.lastSeen',Date.now())}
 // scoreboard: STATUS "## Scoreboard" lines "- Label: value (sub)"
 function parseScore(md){if(!/^## Scoreboard\s*$/m.test(md))return null;const out=[];
   for(const l of section(md,'Scoreboard').split('\n')){const m=l.match(/^- ([^:]+):\s*(.+)$/);if(m){const [v,sub]=m[2].split(/\s+\(/);out.push({label:m[1].trim(),links:linkMd(m[2])[1],value:linkMd(v.trim())[0],sub:sub?sub.replace(/\)\s*$/,''):''})}}return out}
-function renderScore(){const box=document.getElementById('score');box.replaceChildren();const s=DATA.score;if(!s||!s.length)return;
+function renderScore(){if(!DATA)return;const box=document.getElementById('score');box.replaceChildren();const s=DATA.score;if(!s||!s.length)return;
   const srcs=s.filter(t=>/^sources?$/i.test(t.label));for(const t of s.filter(t=>!/^sources?$/i.test(t.label))){const main=/^sales/i.test(t.label);const d=el('div','tile'+(main?' main':''));d.append(el('div','lab',t.label),el('div','val',t.value));
     if(main){const m=t.value.match(/(\d+)\s*\/\s*(\d+)/);const dl=Math.ceil((new Date('2026-11-30T23:59:59-04:00')-Date.now())/864e5);
       d.append(el('div','sub',(t.sub?t.sub+' · ':'')+(dl>0?dl+' days left':'deadline passed')));if(m){const b=el('div','bar');const i=el('i');i.style.width=Math.min(100,100*m[1]/m[2])+'%';b.append(i);d.append(b)}}
@@ -763,7 +763,7 @@ function parseReview(md){if(!/^## Review images\s*$/m.test(md))return [];return 
 const imgCache={};
 async function imgURL(path){if(imgCache[path])return imgCache[path];const r=await fetch(API+'/contents/'+path.split('/').map(encodeURIComponent).join('/')+'?ref=main',{headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github.raw','X-GitHub-Api-Version':'2022-11-28'}});if(!r.ok)throw new Error('HTTP '+r.status);return imgCache[path]=URL.createObjectURL(await r.blob())}
 let revKey='';
-function renderReview(){const items=DATA.review||[];const p=document.getElementById('reviewp');const key=items.map(i=>i.raw).join('\n');if(key===revKey)return;revKey=key;
+function renderReview(){if(!DATA)return;const items=DATA.review||[];const p=document.getElementById('reviewp');const key=items.map(i=>i.raw).join('\n');if(key===revKey)return;revKey=key;
   p.hidden=!items.length;const box=document.getElementById('revlist');box.replaceChildren();
   for(const it of items){const wrap=el('div','revitem');wrap.append(el('div','q',it.q));if(it.detail)wrap.append(el('div','d',it.detail));
     const grid=el('div','revgrid');const note=el('textarea');note.rows=2;note.placeholder='Optional note for R2 (changes you want)';note.setAttribute('aria-label','Optional note for R2');const st=el('span','note');
@@ -787,7 +787,7 @@ async function sendToInbox(title,body,tag,removeStatusLine){
 // ready-to-send drafts: STATUS "## Ready to send" lines "- **Title** — exact message text" (use " // " for line breaks)
 function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];return section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map(l=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const chat=/\[chat\]\s*$/i.test(m[1]);return {raw:l,chat,title:m[1].replace(/\s*\[chat\]\s*$/i,''),text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean)}
 let readyKey='';
-function renderReady(){const items=DATA.ready||[];const key=items.map(i=>i.raw).join('\n');if(key===readyKey)return;readyKey=key;
+function renderReady(){if(!DATA)return;const items=DATA.ready||[];const key=items.map(i=>i.raw).join('\n');if(key===readyKey)return;readyKey=key;
   const p=document.getElementById('readyp');p.hidden=!items.length;const box=document.getElementById('readylist');box.replaceChildren();
   for(const it of items){const d=el('div','rd');d.append(el('div','q',it.title),el('blockquote',null,it.text));const row=el('div','row');const st=el('span','note');
     if(it.chat){d.append(el('div','note','Approval: paste this in R2\'s ChatGPT chat. R2 doesn\'t accept live-change approvals sent through the Wire.'));
