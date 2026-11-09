@@ -265,10 +265,16 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
   .todo li:hover,.sres li:hover{transform:translateX(3px)}
 }
 
+.wk.stale{border-left-color:var(--warn)!important;box-shadow:0 0 0 1px color-mix(in srgb,var(--warn) 40%,transparent),var(--glass-shadow)}
+.wkrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.wake{font:600 13px var(--body);padding:8px 14px;min-height:38px;border-radius:99px;border:1px solid var(--r2);background:var(--r2);color:var(--bg);cursor:pointer}
+.wake.ghost{background:transparent;color:var(--r2)}
+.wk.stale .wake:not(.ghost){background:var(--warn);border-color:var(--warn)}
+.r2url{flex:1 1 220px;min-width:0;font:14px var(--body);padding:8px 10px;border-radius:10px;border:1px solid var(--glass-edge);background:var(--glass-hi);color:var(--ink)}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109164317';
+<script>/*build*/const WIRE_BUILD='20261109180304';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -543,7 +549,8 @@ function renderWaiting(w){if(!DATA)return;
       li.append(inp,b,note)}
     ul.append(li)}
 }
-const ACTIVE_MIN=20;
+const ACTIVE_MIN=20, STALE_MIN=30;
+const WAKE_MSG='R2: Check the hub now. Continue the Queue from the top. When you start a task, post a [status] Started: line so the Wire shows it, and post progress at least every 20 minutes on long tasks. Mirror any question for me into Waiting on Kevin.';
 function ago(ms){const m=Math.round(ms/60000);if(m<1)return 'just now';if(m<60)return m+' min ago';const h=Math.round(m/60);if(h<48)return h+' h ago';return Math.round(h/24)+' days ago'}
 function renderWorking(){
   const box=document.getElementById('working');if(!box||!DATA)return;box.replaceChildren();
@@ -557,6 +564,12 @@ function renderWorking(){
     card.append(head);
     if(who==='R2'&&taken.length){const ul=el('ul');for(const x of taken.slice(0,3))ul.append(el('li',null,x));card.append(el('div','last','In progress from the inbox:'),ul)}
     if(last)card.append(el('div','last','Latest: '+(last.detail||last.title)));
+    if(who==='R2'){const quiet=!t||now-t>=STALE_MIN*60000;if(quiet){card.classList.add('stale');card.append(el('div','last','R2 has been quiet for '+(t?ago(now-t).replace(' ago',''):'a while')+'. He only works while his chat is running.'))}
+      const row=el('div','wkrow');const wake=el('button','wake',quiet?'Wake R2':'Nudge R2');wake.type='button';const st=el('span','note');
+      wake.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(WAKE_MSG);st.textContent='Message copied. Paste it in R2\'s chat.'}catch{st.textContent='Opened R2. Type: check the hub and continue the Queue.'}window.open(store.get('wire.r2url','')||'https://chatgpt.com/','_blank','noopener')});
+      const set=el('button','wake ghost',store.get('wire.r2url','')?'Change R2 link':'Set R2 chat link');set.type='button';
+      set.addEventListener('click',()=>{const inp=el('input','r2url');inp.type='url';inp.placeholder='Paste R2 chat link (chatgpt.com/c/...)';inp.value=store.get('wire.r2url','');const ok=el('button','wake','Save');ok.type='button';ok.addEventListener('click',()=>{const v=inp.value.trim();if(v&&!/^https:\/\/(chatgpt\.com|chat\.openai\.com)\//.test(v)){st.textContent='That is not a ChatGPT link.';return}store.set('wire.r2url',v);renderWorking()});row.replaceChildren(inp,ok,st)});
+      row.append(wake,set,st);card.append(row)}
     box.append(card);
   }
 }
