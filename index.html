@@ -32,6 +32,18 @@ img{max-width:100%}
   --r2:#5cc79c; --r2-soft:#16302a; --claude:#f0a06c; --claude-soft:#3a2518; --kevin:#93a8ff; --kevin-soft:#1e2647; --codex:#b4a2ff;
   --warn:#e8b45a; --warn-soft:#352914; color-scheme:dark}
 *{box-sizing:border-box}
+.donep .dhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.donep .dcount{display:flex;flex-wrap:wrap;gap:8px}
+.donep .dc{border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px;background:var(--surface)}
+.donep .dc b{font-size:18px;margin-right:4px}
+.donep .dc.R2 b{color:var(--r2)} .donep .dc.Codex b{color:var(--codex)} .donep .dc.Claude b{color:var(--claude)} .donep .dc.Kevin b{color:var(--kevin)}
+.donep ol{list-style:none;margin:0;padding:0}
+.donep li{display:grid;grid-template-columns:64px 74px 1fr;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:13px;align-items:baseline}
+.donep li .w{font-weight:600} .donep li.R2 .w{color:var(--r2)} .donep li.Codex .w{color:var(--codex)} .donep li.Claude .w{color:var(--claude)} .donep li.Kevin .w{color:var(--kevin)}
+.donep li .tm{color:var(--muted);font-family:var(--mono);font-size:12px}
+.donep li a{color:inherit}
+@media (max-width:560px){.donep li{grid-template-columns:52px 1fr}.donep li .w{grid-column:2}.donep li .wt{grid-column:1/-1}}
+
 .late{color:var(--warn);font-size:12px;font-weight:600}
 .board{display:grid;grid-template-columns:1.2fr repeat(3,1fr);gap:10px}
 @media (max-width:760px){.board{grid-template-columns:repeat(3,1fr);gap:6px}.lane{padding:8px}.lane .tk{font-size:12px}.board .backlog{grid-column:1/-1}}
@@ -40,17 +52,23 @@ img{max-width:100%}
 .lane[data-to="R2"] h3{color:var(--r2)} .lane[data-to="Codex"] h3{color:var(--codex)} .lane[data-to="Claude"] h3{color:var(--claude)}
 .lane.over{background:var(--kevin-soft);border-color:var(--kevin);border-style:solid}
 .tk{display:flex;gap:8px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px;font-size:13px}
-.tk .grip{cursor:grab;touch-action:none;user-select:none;color:var(--muted);font-size:16px;line-height:1;padding:2px 4px;min-width:28px;min-height:28px;display:grid;place-items:center}
+.tk .grip{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;color:var(--muted);font-size:20px;line-height:1;min-width:36px;min-height:36px;margin:-4px 0 -4px -4px;border:0;border-radius:8px;background:transparent;display:grid;place-items:center;flex:none}.tk .grip:hover{background:var(--line);color:var(--ink)}.tk .grip:active{cursor:grabbing}
 .tk .tx{flex:1;min-width:0;overflow-wrap:anywhere}
 .tk .st{display:block;font-size:11px;color:var(--muted);margin-top:3px}
 .tk .st.taken{color:var(--r2)} .tk .st.new{color:var(--warn)}
 .tk select{font:inherit;font-size:12px;max-width:92px}
-.tk.ghost{position:fixed;z-index:60;pointer-events:none;opacity:.92;box-shadow:0 10px 30px rgba(0,0,0,.3);width:240px}
+.tk.ghost{position:fixed;z-index:60;pointer-events:none;margin:0;opacity:.97;transform:rotate(-2.5deg) scale(1.04);box-shadow:0 18px 40px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.2);cursor:grabbing;transition:transform .12s ease}
+.tk.ghost.landing{transition:left .22s ease,top .22s ease,transform .22s ease,opacity .22s ease;transform:scale(.55);opacity:0}
+.tk.lifting{transform:scale(1.03);box-shadow:0 8px 20px rgba(0,0,0,.18);transition:transform .15s ease,box-shadow .15s ease}
+body.dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
+body.dragging .lane.droppable{border-color:var(--kevin);border-style:dashed;position:relative}
+body.dragging .lane.droppable::after{content:'Drop here';position:absolute;right:8px;top:8px;font-size:11px;font-weight:600;color:var(--kevin)}
+.lane.over{transform:scale(1.01);transition:transform .12s ease}
 .addtask{display:flex;gap:6px;margin-top:6px}.addtask input{flex:1;min-width:0;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .addtask select{font:inherit;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0 6px}
 .tconfirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--kevin-soft);border:1px solid var(--kevin)}
 .tconfirm span{flex:1 1 200px;font-size:14px}.tconfirm button{font:inherit;min-height:40px;padding:6px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.tconfirm button.go{background:var(--ink);color:var(--bg)}
-.tk.drag-src{opacity:.35}
+.tk.drag-src{opacity:.35;outline:2px dashed var(--line);outline-offset:-2px}
 .tk{cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .addtask button{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--ink);color:var(--bg);cursor:pointer}
 
@@ -303,7 +321,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109202153';
+<script>/*build*/const WIRE_BUILD='20261109224224';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -349,7 +367,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 
   <section class="panel tasks" id="tasksp" aria-labelledby="tasks-h">
     <h2 id="tasks-h">Tasks</h2>
-    <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog and drag it onto an AI later. You can also drag a task from one AI to another, or back to your backlog (on the phone, press and hold a card, then drag). Codex tasks go through R2. Live-change approvals still go in R2's chat.</p>
+    <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog. To move a task, grab its ⠿ handle and drag it onto R2, Codex or Claude (or from one AI to another, or back to your backlog). On the phone you can also press and hold the card, then drag. Codex tasks go through R2. Live-change approvals still go in R2's chat.</p>
     <div class="board" id="board">
       <div class="lane backlog" data-to="backlog"><h3>Your backlog</h3><div id="bl"></div>
         <form class="addtask" id="addtask"><input id="newtask" maxlength="200" placeholder="New task…" aria-label="New task"><select id="newwho" aria-label="Who does it"><option value="backlog">Backlog</option><option value="R2">R2</option><option value="Codex">Codex</option><option value="Claude">Claude</option></select><button type="submit">Add</button></form></div>
@@ -359,6 +377,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
     </div>
     <div class="tconfirm" id="tconfirm" hidden><span id="tcq"></span><button type="button" class="go" id="tcyes">Send</button><button type="button" id="tcno">Cancel</button></div>
     <p class="note" id="taskst"></p>
+  </section>
+  <section class="panel donep" id="donep" aria-labelledby="done-h">
+    <div class="dhead"><h2 id="done-h" style="margin:0">Done</h2>
+      <div class="chips" role="group" aria-label="Day"><button class="chip" data-day="0" aria-pressed="true">Today</button><button class="chip" data-day="1" aria-pressed="false">Yesterday</button></div></div>
+    <div class="dcount" id="dcount"></div>
+    <ol id="donelist"></ol>
+    <p class="note" id="donenote"></p>
   </section>
   <section class="panel ready" id="readyp" aria-labelledby="ready-h" hidden>
     <h2 id="ready-h">Ready to send to R2</h2>
@@ -632,7 +657,7 @@ function renderWorking(){
 setInterval(renderWorking,60000);
 function renderTop() {if(!DATA)return;
   renderWorking();
-  renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderTasks();renderNew();checkAlerts();
+  renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderTasks();renderDone();renderNew();checkAlerts();
   const dl = document.getElementById('now'); dl.replaceChildren();
   for (const k of ['Task', 'Doing', 'Blocked on', 'Next']) {
     if (!DATA.now[k]) continue;
@@ -890,33 +915,45 @@ function stLabel(to,st){const who=to==='Codex'?'R2/Codex':to;return /^taken|^in 
 function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DATA.inbox,DATA.cinbox,(DATA.events||[]).find(e=>e.actor==='Codex')?.t,Math.floor(Date.now()/600000)]);if(key===taskKey)return;taskKey=key;
   const bl=document.getElementById('bl');bl.replaceChildren();
   if(!(DATA.backlog||[]).length)bl.append(el('p','note','No tasks yet. Add one below.'));
-  (DATA.backlog||[]).forEach(t=>{const c=el('div','tk');c.dataset.task=t;const g=el('span','grip','⠿');g.title='Drag onto R2, Codex or Claude';g.setAttribute('aria-hidden','true');
+  (DATA.backlog||[]).forEach(t=>{const c=el('div','tk');c.dataset.task=t;const g=el('button','grip','⠿');g.type='button';g.title='Grab and drag onto R2, Codex or Claude';g.setAttribute('aria-label','Drag task');
     const sel=el('select');sel.setAttribute('aria-label','Send task to');[['','Send to…'],['R2','R2'],['Codex','Codex'],['Claude','Claude'],['del','Remove']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;sel.append(o)});
     sel.addEventListener('change',()=>{const v=sel.value;sel.value='';if(v==='del')removeTask(t);else if(v)askAssign({t,src:'backlog'},v)});
-    const pl={t,src:'backlog'};g.addEventListener('pointerdown',e=>startDrag(e,c,pl));c.addEventListener('pointerdown',e=>armDrag(e,c,pl));c.append(g,el('span','tx',t),sel);bl.append(c)});
+    const pl={t,src:'backlog'};bindDrag(c,g,pl);c.append(g,el('span','tx',t),sel);bl.append(c)});
   for(const to of ['R2','Codex','Claude']){const box=document.getElementById('ln-'+to);box.replaceChildren();const items=laneItems(to).slice(0,6);
     if(to==='Codex'){const cx=(DATA.events||[]).filter(e=>e.actor==='Codex');if(cx.length){const last=cx[0],mins=Math.round((Date.now()-new Date(last.t))/60000);const ago=mins<60?mins+' min ago':Math.round(mins/60)+' h ago';
       const br=(last.detail.match(/branch (.+)$/)||[])[1]||'';const active=mins<=90;const c=el('div','tk');const tx=el('span','tx',(active?'Working on Kortana':'Kortana · idle')+(br?' ('+br+')':''));
       tx.append(el('span','st '+(active?'taken':''),'Last commit '+ago+': '+last.title.slice(0,60)));c.append(tx);box.append(c)}}
     if(!items.length&&!(to==='Codex'&&box.childElementCount))box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
     for(const it of items){const c=el('div','tk');const clean=it.title.replace(/\s*\((Kevin via Wire|Kevin|Kevin, relayed by Claude)\)\s*$/,'').replace(/^[\d-]+ [\d:]+ · /,'').replace(/^\d{1,2}:\d{2} · /,'').replace(/\s*—\s*(New|Taken)\s*$/,'');const tx=el('span','tx',clean);const [cls,lab]=stLabel(to,it.status);tx.append(el('span','st '+cls,lab));c.append(tx);
-      const pl={t:clean.replace(/^For Codex:\s*/i,''),src:'inbox',from:to,head:it.title,taken:cls==='taken'};c.title='Drag to give this to someone else, or back to your backlog';c.addEventListener('pointerdown',e=>armDrag(e,c,pl));box.append(c)}}}
+      const pl={t:clean.replace(/^For Codex:\s*/i,''),src:'inbox',from:to,head:it.title,taken:cls==='taken'};c.title='Drag to give this to someone else, or back to your backlog';const g=el('button','grip','⠿');g.type='button';g.title='Grab and drag to someone else';g.setAttribute('aria-label','Drag task');c.prepend(g);bindDrag(c,g,pl);box.append(c)}}}
 let dragging=false;
-document.addEventListener('touchmove',e=>{if(dragging)e.preventDefault()},{passive:false});
-function armDrag(e,card,pl){if(e.target.closest('select,button,.grip'))return;const x0=e.clientX,y0=e.clientY,touch=e.pointerType!=='mouse';let timer=null,done=false;
-  const end=()=>{done=true;clearTimeout(timer);document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',end);document.removeEventListener('pointercancel',end);card.style.transform=''};
-  const go=ev=>{end();startDrag(ev||e,card,pl)};
-  const mv=ev=>{const d=Math.hypot(ev.clientX-x0,ev.clientY-y0);if(touch){if(d>8)end()}else if(d>5)go(ev)};
-  if(touch)timer=setTimeout(()=>{if(!done){try{navigator.vibrate&&navigator.vibrate(15)}catch{}go(e)}},250);
-  document.addEventListener('pointermove',mv);document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end)}
-function startDrag(e,card,pl){if(e.cancelable)e.preventDefault();dragging=true;card.classList.add('drag-src');const gh_=card.cloneNode(true);gh_.classList.remove('drag-src');gh_.classList.add('ghost');document.body.append(gh_);let over=null,lx=e.clientX,ly=e.clientY;
-  const pos=(x,y)=>{lx=x;ly=y;gh_.style.left=(x-20)+'px';gh_.style.top=(y-20)+'px';gh_.hidden=true;const tgt=document.elementFromPoint(x,y);gh_.hidden=false;const ln=tgt&&tgt.closest('.lane[data-to]');
-    if(over&&over!==ln)over.classList.remove('over');over=ln&&!(ln.dataset.to==='backlog'&&pl.src==='backlog')&&ln.dataset.to!==pl.from?ln:null;if(over)over.classList.add('over');
-    if(y<60)scrollBy(0,-14);else if(y>innerHeight-60)scrollBy(0,14)};
-  const mv=ev=>pos(ev.clientX,ev.clientY);const tm=ev=>{const p=ev.touches[0];if(p)pos(p.clientX,p.clientY)};
-  const up=()=>{dragging=false;document.removeEventListener('pointermove',mv);document.removeEventListener('touchmove',tm);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);document.removeEventListener('touchend',up);gh_.remove();card.classList.remove('drag-src');
-    if(over){over.classList.remove('over');askAssign(pl,over.dataset.to)}};
-  pos(lx,ly);document.addEventListener('pointermove',mv);document.addEventListener('touchmove',tm,{passive:true});document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);document.addEventListener('touchend',up)}
+document.addEventListener('touchmove',e=>{if(dragging&&e.cancelable)e.preventDefault()},{passive:false});
+function bindDrag(card,handle,pl){
+  // The handle grabs at once (mouse or finger). The card body grabs after a 4px mouse move, or a 200ms press-and-hold on touch.
+  handle.addEventListener('pointerdown',e=>{e.preventDefault();try{handle.setPointerCapture(e.pointerId)}catch{}startDrag(e,card,pl)});
+  handle.addEventListener('click',e=>e.preventDefault());
+  card.addEventListener('pointerdown',e=>{if(e.target.closest('select,button,input,a'))return;if(e.button>0)return;
+    const x0=e.clientX,y0=e.clientY,touch=e.pointerType!=='mouse';let timer=null,done=false;
+    const end=()=>{done=true;clearTimeout(timer);card.classList.remove('lifting');removeEventListener('pointermove',mv);removeEventListener('pointerup',end);removeEventListener('pointercancel',end)};
+    const go=ev=>{end();startDrag(ev,card,pl)};
+    const mv=ev=>{const d=Math.hypot(ev.clientX-x0,ev.clientY-y0);if(touch){if(d>8)end()}else if(d>4)go(ev)};
+    if(touch)timer=setTimeout(()=>{if(!done){card.classList.add('lifting');try{navigator.vibrate&&navigator.vibrate(15)}catch{}go({clientX:x0,clientY:y0,cancelable:false})}},200);
+    addEventListener('pointermove',mv);addEventListener('pointerup',end);addEventListener('pointercancel',end)})}
+function startDrag(e,card,pl){if(dragging)return;if(e.cancelable)e.preventDefault();dragging=true;
+  const r=card.getBoundingClientRect(),ox=Math.min(Math.max(e.clientX-r.left,8),r.width-8),oy=Math.min(Math.max(e.clientY-r.top,8),r.height-8);
+  const gh_=card.cloneNode(true);gh_.classList.remove('drag-src','lifting');gh_.classList.add('ghost');gh_.style.width=r.width+'px';gh_.querySelectorAll('select').forEach(x=>x.remove());document.body.append(gh_);
+  card.classList.add('drag-src');document.body.classList.add('dragging');
+  const lanes=[...document.querySelectorAll('.lane[data-to]')].filter(ln=>!(ln.dataset.to==='backlog'&&pl.src==='backlog')&&ln.dataset.to!==pl.from);lanes.forEach(ln=>ln.classList.add('droppable'));
+  let over=null,lx=e.clientX,ly=e.clientY;
+  const pos=(x,y)=>{lx=x;ly=y;gh_.style.left=(x-ox)+'px';gh_.style.top=(y-oy)+'px';const tgt=document.elementFromPoint(x,y);const ln=tgt&&tgt.closest('.lane.droppable');
+    if(over&&over!==ln)over.classList.remove('over');over=ln||null;if(over)over.classList.add('over');
+    if(y<70)scrollBy(0,-16);else if(y>innerHeight-70)scrollBy(0,16)};
+  const mv=ev=>pos(ev.clientX,ev.clientY);const tm=ev=>{const t=ev.touches[0];if(t)pos(t.clientX,t.clientY)};
+  const finish=()=>{dragging=false;removeEventListener('pointermove',mv);removeEventListener('touchmove',tm);removeEventListener('pointerup',finish);removeEventListener('pointercancel',finish);removeEventListener('touchend',finish);removeEventListener('touchcancel',finish);
+    document.body.classList.remove('dragging');lanes.forEach(ln=>ln.classList.remove('droppable'));card.classList.remove('drag-src');
+    if(over){const dst=over;dst.classList.remove('over');const b=dst.getBoundingClientRect();gh_.classList.add('landing');gh_.style.left=(b.left+b.width/2-r.width/2)+'px';gh_.style.top=(b.top+40)+'px';setTimeout(()=>gh_.remove(),240);askAssign(pl,dst.dataset.to)}
+    else{gh_.classList.add('landing');gh_.style.left=r.left+'px';gh_.style.top=r.top+'px';setTimeout(()=>gh_.remove(),240)}};
+  pos(lx,ly);addEventListener('pointermove',mv);addEventListener('touchmove',tm,{passive:true});addEventListener('pointerup',finish);addEventListener('pointercancel',finish);addEventListener('touchend',finish);addEventListener('touchcancel',finish)}
 async function editBacklog(fn,msg){await withRetry(async()=>{let f;try{f=await getFile('TASKS.md')}catch(e){if(e.message!=='not-found')throw e;f={sha:undefined,text:'# Tasks\n\nKevin\'s backlog. The Wire adds and removes lines here; dragging a task to an AI moves it into that AI\'s inbox.\n\n## Backlog\n'}}
   const lines=f.text.split('\n');fn(lines);await putFile('TASKS.md',lines.join('\n'),f.sha,msg)})}
 function setTaskSt(m){document.getElementById('taskst').textContent=m}
@@ -956,6 +993,32 @@ async function assign(t,to,fromBacklog=true){setTaskSt('Sending to '+to+'…');c
     if(fromBacklog)await editBacklog(ls=>{const k=ls.indexOf('- '+t);if(k>=0)ls.splice(k,1)},'[kevin-task] Assigned to '+to+': '+t.slice(0,50));
     if(card)card.remove();DATA.backlog=(DATA.backlog||[]).filter(x=>x!==t);setTaskSt('Sent to '+to+'. It shows in their column until it\'s done.');taskKey='';setTimeout(()=>refresh(false),1200)}
   catch(err){if(card)card.style.opacity='';setTaskSt(err.message==='nowrite'?'Your token is read-only.':'Could not send ('+err.message+').')}}
+
+// ---- Done tracker: finished work per day (Puerto Rico time), from hub + Kortana commits ----
+let doneDay=0,doneKey='',doneAll=false;
+const prDay=d=>new Date(new Date(d).getTime()-4*3600e3).toISOString().slice(0,10);
+function doneItem(e){const t=e.title||'';
+  if(/^Merge|resolve:|\blog:|^\[kevin-msg\]|^\[kevin-task\]|reconcil/i.test(t))return null;
+  if(e.actor==='Codex')return {who:'Codex',what:t.replace(/^\[for-claude\]\s*/,'').replace(/^(feat|fix|docs|design|chore):\s*/i,''),link:e.links&&e.links[0]};
+  if(/^\[kevin-done\]/.test(t))return {who:'Kevin',what:t.replace(/^\[kevin-done\]\s*/,'').replace(/^Sent in R2 chat:\s*/,'Sent to R2: '),link:null};
+  if(/^\[kevin-pick\]/.test(t))return {who:'Kevin',what:t.replace(/^\[kevin-pick\]\s*/,''),link:null};
+  if(e.actor==='Claude'){if(e.kind==='review'||/review|\bpass\b/i.test(t))return {who:'Claude',what:t.replace(/^\[for-\w+\]\s*/,''),link:e.links&&e.links[0]};
+    if(/^\[for-\w+\]|Brief:|Wire/i.test(t)&&e.kind!=='status')return null;return null}
+  if(e.actor==='R2'){if(/^\[status\]/.test(t)&&!/complete|completed|delivered|published|live|pass|done/i.test(t))return null;
+    if(/^\[status\] (Started|Progress)/i.test(t))return null;
+    if(e.kind==='report'||e.kind==='decision'||/^\[for-claude\]|complete|published|delivered|live/i.test(t))return {who:'R2',what:(/^\[for-claude\]/.test(t)?'Delivered for review: ':'')+t.replace(/^\[(for-claude|for-kevin|status)\]\s*/g,'').replace(/^Review\s+/i,''),link:e.links&&e.links[0]}}
+  return null}
+function renderDone(){if(!DATA)return;const day=prDay(Date.now()-doneDay*864e5);
+  const items=(DATA.events||[]).filter(e=>prDay(e.t)===day).map(e=>{const d=doneItem(e);return d?{...d,t:e.t}:null}).filter(Boolean);
+  const key=day+doneAll+JSON.stringify(items.map(i=>i.t+i.what));if(key===doneKey)return;doneKey=key;
+  const cnt=document.getElementById('dcount');cnt.replaceChildren();
+  for(const w of ['R2','Codex','Claude','Kevin']){const n=items.filter(i=>i.who===w).length;const d=el('span','dc '+w);d.append(el('b',null,String(n)),document.createTextNode(w));cnt.append(d)}
+  const ol=document.getElementById('donelist');ol.replaceChildren();
+  const lim=doneAll?60:12;for(const i of items.slice(0,lim)){const li=el('li',i.who);li.append(el('span','tm',fmtTime.format(new Date(i.t))),el('span','w',i.who));
+    const wt=el('span','wt');if(i.link){const a=el('a',null,i.what);a.href=i.link.href;a.target='_blank';a.rel='noopener';wt.append(a)}else wt.textContent=i.what;li.append(wt);ol.append(li)}
+  if(items.length>lim){const li=el('li');const more=el('button','chip',doneAll?'Show less':'Show all '+Math.min(items.length,60));more.type='button';more.addEventListener('click',()=>{doneAll=!doneAll;doneKey='';renderDone()});li.style.display='block';li.append(more);ol.append(li)}
+  document.getElementById('donenote').textContent=items.length?'Counts deliverables, reviews, Kortana commits and your check-offs; routine status lines are left out.':'Nothing finished '+(doneDay?'yesterday':'yet today')+'.'}
+document.querySelectorAll('#donep [data-day]').forEach(b=>b.addEventListener('click',()=>{doneDay=+b.dataset.day;document.querySelectorAll('#donep [data-day]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));doneKey='';renderDone()}));
 // ready-to-send drafts: STATUS "## Ready to send" lines "- **Title** — exact message text" (use " // " for line breaks)
 function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];return section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map(l=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const chat=/\[chat\]\s*$/i.test(m[1]);return {raw:l,chat,title:m[1].replace(/\s*\[chat\]\s*$/i,''),text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean)}
 let readyKey='';
