@@ -209,6 +209,39 @@ code{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px
 .pairbox .qr{background:#fff;padding:14px;border-radius:8px;justify-self:center;line-height:0}
 .pairbox p{margin:0;font-size:14px;color:var(--muted)}
 .pairbox button{font:600 14px var(--body);padding:10px 14px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+/* ---- Liquid glass theme ---- */
+:root{--glass:rgba(255,255,255,.42);--glass-hi:rgba(255,255,255,.7);--glass-edge:rgba(255,255,255,.65);--glass-line:rgba(20,30,40,.08);--glass-shadow:0 10px 30px rgba(24,34,44,.10),0 1px 2px rgba(24,34,44,.06);--glass-sheen:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -1px 0 rgba(255,255,255,.15);
+  --blob1:rgba(29,122,87,.36);--blob2:rgba(184,90,34,.30);--blob3:rgba(52,81,201,.30);--base:#eef1ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--glass:rgba(28,33,31,.48);--glass-hi:rgba(40,46,44,.62);--glass-edge:rgba(255,255,255,.14);--glass-line:rgba(255,255,255,.08);--glass-shadow:0 10px 30px rgba(0,0,0,.35);--glass-sheen:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(255,255,255,.03);
+  --blob1:rgba(92,199,156,.22);--blob2:rgba(240,160,108,.18);--blob3:rgba(147,168,255,.18);--base:#0d100f}}
+:root[data-theme="dark"]{--glass:rgba(28,33,31,.48);--glass-hi:rgba(40,46,44,.62);--glass-edge:rgba(255,255,255,.14);--glass-line:rgba(255,255,255,.08);--glass-shadow:0 10px 30px rgba(0,0,0,.35);--glass-sheen:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(255,255,255,.03);--blob1:rgba(92,199,156,.22);--blob2:rgba(240,160,108,.18);--blob3:rgba(147,168,255,.18);--base:#0d100f}
+html{background:var(--base)}
+body{min-height:100vh;background:
+  radial-gradient(60vmax 60vmax at 8% 0%,var(--blob1),transparent 60%),
+  radial-gradient(55vmax 55vmax at 100% 18%,var(--blob2),transparent 60%),
+  radial-gradient(70vmax 70vmax at 40% 100%,var(--blob3),transparent 60%),var(--base);background-attachment:fixed}
+.panel,.tile,.wk,.card,.newbar,.revopt,.ev.Kevin .card{background:var(--glass);border:1px solid var(--glass-edge);border-radius:22px;box-shadow:var(--glass-shadow),var(--glass-sheen);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
+.panel{padding:20px 22px}
+.tile{border-radius:18px}
+.card{border-radius:16px}
+.ev.R2 .card{border-left:3px solid var(--r2)} .ev.Claude .card{border-right:3px solid var(--claude)}
+.ev.Kevin .card{background:color-mix(in srgb,var(--kevin-soft) 70%,transparent)}
+.waiting{border-left:4px solid var(--kevin)} .ready{border-left:4px solid var(--claude)}
+.wk.R2{border-left:4px solid var(--r2)} .wk.Claude{border-left:4px solid var(--claude)} .tile.main{border-left:4px solid var(--r2)}
+.chip,.day,.pill{background:var(--glass-hi);border:1px solid var(--glass-edge);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:transparent}
+.newbar{color:var(--kevin)}
+.search input[type=search],.msg textarea,.revitem textarea,.todo .done-note,.rd blockquote{background:var(--glass-hi);border:1px solid var(--glass-edge);border-radius:14px}
+.sbtn,.msg .sbtn{border-radius:14px}
+.answer{background:color-mix(in srgb,var(--claude-soft) 70%,transparent);border-radius:16px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.feed::before{background:var(--glass-line)}
+.bar{background:var(--glass-line)}
+.score-src{grid-column:1/-1;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;padding:0 4px}
+.score-src a{color:var(--kevin)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.panel,.tile,.wk,.card,.newbar,.revopt,.chip,.day{background:var(--surface)}}
+@media (prefers-reduced-transparency:reduce){.panel,.tile,.wk,.card,.newbar,.revopt,.chip,.day{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
+
 </style>
 
 
@@ -689,12 +722,13 @@ window.addEventListener('pagehide',()=>store.set('wire.lastSeen',Date.now()));
 if(!lastSeen){store.set('wire.lastSeen',Date.now())}
 // scoreboard: STATUS "## Scoreboard" lines "- Label: value (sub)"
 function parseScore(md){if(!/^## Scoreboard\s*$/m.test(md))return null;const out=[];
-  for(const l of section(md,'Scoreboard').split('\n')){const m=l.match(/^- ([^:]+):\s*(.+)$/);if(m){const [v,sub]=m[2].split(/\s+\(/);out.push({label:m[1].trim(),value:linkMd(v.trim())[0],sub:sub?sub.replace(/\)\s*$/,''):''})}}return out}
+  for(const l of section(md,'Scoreboard').split('\n')){const m=l.match(/^- ([^:]+):\s*(.+)$/);if(m){const [v,sub]=m[2].split(/\s+\(/);out.push({label:m[1].trim(),links:linkMd(m[2])[1],value:linkMd(v.trim())[0],sub:sub?sub.replace(/\)\s*$/,''):''})}}return out}
 function renderScore(){const box=document.getElementById('score');box.replaceChildren();const s=DATA.score;if(!s||!s.length)return;
-  for(const t of s){const main=/^sales/i.test(t.label);const d=el('div','tile'+(main?' main':''));d.append(el('div','lab',t.label),el('div','val',t.value));
+  const srcs=s.filter(t=>/^sources?$/i.test(t.label));for(const t of s.filter(t=>!/^sources?$/i.test(t.label))){const main=/^sales/i.test(t.label);const d=el('div','tile'+(main?' main':''));d.append(el('div','lab',t.label),el('div','val',t.value));
     if(main){const m=t.value.match(/(\d+)\s*\/\s*(\d+)/);const dl=Math.ceil((new Date('2026-11-30T23:59:59-04:00')-Date.now())/864e5);
       d.append(el('div','sub',(t.sub?t.sub+' · ':'')+(dl>0?dl+' days left':'deadline passed')));if(m){const b=el('div','bar');const i=el('i');i.style.width=Math.min(100,100*m[1]/m[2])+'%';b.append(i);d.append(b)}}
-    else if(t.sub)d.append(el('div','sub',t.sub));box.append(d)}}
+    else if(t.sub)d.append(el('div','sub',t.sub));box.append(d)}
+  if(srcs.length){const f=el('div','score-src');f.append(el('span',null,'Sources:'));for(const t of srcs){for(const l of (t.links||[])){const a=el('a',null,l.label);a.href=l.href;a.target='_blank';a.rel='noopener';f.append(a)}if(!(t.links||[]).length)f.append(el('span',null,t.value))}box.append(f)}}
 // review images: STATUS "## Review images" lines "- **Question** — detail [A label](path.png) [B label](path.jpg)"
 function parseReview(md){if(!/^## Review images\s*$/m.test(md))return [];return section(md,'Review images').split('\n').filter(l=>l.startsWith('- **')).map(l=>{
   const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]?\s*(.*)$/)||[,l,''];const opts=[];m[2].replace(/\[([^\]]+)\]\(([^)]+\.(?:png|jpe?g|webp|gif))\)/gi,(_,a,b)=>{opts.push({label:a,path:b.replace(/^\.?\//,'')});return ''});
