@@ -245,10 +245,30 @@ body{min-height:100vh;background:
 #scanbox{display:grid;gap:8px;margin-top:10px}
 #scanvid{width:100%;max-width:360px;border-radius:14px;background:#000}
 .scanhint{font-size:13px;color:var(--muted);margin:8px 0 0}
+/* ---- Performance + hover lift ---- */
+body{background:var(--base)!important;background-attachment:scroll!important}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;transform:translateZ(0);background:
+  radial-gradient(60vmax 60vmax at 8% 0%,var(--blob1),transparent 60%),
+  radial-gradient(55vmax 55vmax at 100% 18%,var(--blob2),transparent 60%),
+  radial-gradient(70vmax 70vmax at 40% 100%,var(--blob3),transparent 60%)}
+/* blur only on the few big panels; feed cards and chips use plain translucent glass (no live blur) */
+.card,.ev.Kevin .card,.chip,.day,.pill,.revopt{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.card{background:var(--glass-hi)}
+.panel,.tile,.wk,.newbar{-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+.ev{content-visibility:auto;contain-intrinsic-size:auto 90px}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .panel,.tile,.wk,.card,.revopt,.chip,.sbtn,.btn,.rd button,.revopt button,.done-btn{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s ease}
+  .tile:hover,.wk:hover,.card:hover,.revopt:hover{transform:translateY(-3px) scale(1.012);box-shadow:0 16px 36px rgba(24,34,44,.16),var(--glass-sheen)}
+  .panel:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(24,34,44,.14),var(--glass-sheen)}
+  .chip:hover,.sbtn:hover,.btn:hover,.rd button:hover,.revopt button:hover,.done-btn:hover{transform:translateY(-2px)}
+  .todo li,.sres li{transition:transform .18s cubic-bezier(.2,.8,.2,1)}
+  .todo li:hover,.sres li:hover{transform:translateX(3px)}
+}
+
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109160730';
+<script>/*build*/const WIRE_BUILD='20261109161420';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
