@@ -343,6 +343,16 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .lane{background:var(--sunk)!important;border-radius:4px!important;border-color:var(--line)!important}
 .tk{background:var(--surface)!important;border-radius:3px!important}
 .hint,#app>header .sub{display:none!important}
+/* Hover lift (Kevin, Nov 9): boxes rise and glow under the cursor. Transform/opacity only, mouse devices only. */
+.panel,.tile,.wk,.card,.revopt,.kchip,.tk{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}
+.panel::before,.panel::after{transition:width .18s ease,height .18s ease,opacity .18s ease}
+@media (hover:hover) and (pointer:fine){
+  .panel:hover,.tile:hover,.wk:hover,.card:hover,.revopt:hover{transform:translateY(-3px)!important;border-color:rgba(127,179,213,.45)!important;box-shadow:0 10px 24px -12px rgba(0,0,0,.7),0 0 0 1px rgba(127,179,213,.08),0 0 18px -6px rgba(127,179,213,.25)!important}
+  .panel:hover::before,.panel:hover::after{width:16px;height:16px;opacity:1}
+  .kchip:hover{transform:translateY(-2px);border-color:rgba(127,179,213,.45)}
+  .tk:hover{border-color:rgba(127,179,213,.45)!important;box-shadow:0 0 14px -6px rgba(127,179,213,.3)!important}
+}
+@media (prefers-reduced-motion:reduce){.panel:hover,.tile:hover,.wk:hover,.card:hover,.revopt:hover,.kchip:hover{transform:none!important}}
 /* header */
 #app>header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;align-items:center;gap:14px;padding-block:14px 12px;margin:0;border-bottom:1px solid var(--line)}
 #app>header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.55}
@@ -401,7 +411,7 @@ section[aria-labelledby="search-h"]:not(.open){display:none!important}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109203634';
+<script>/*build*/const WIRE_BUILD='20261109204304';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
