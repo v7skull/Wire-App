@@ -394,10 +394,25 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .info:hover,.info:focus-visible{color:var(--ink);border-color:var(--accent)}
 .kpop{position:absolute;z-index:30;max-width:320px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);font:13px/1.45 var(--body);padding:10px 12px;border-radius:4px;text-transform:none;letter-spacing:0}
 @media (prefers-reduced-motion:reduce){.kchip .kd.on{animation:none}.kbar i{transition:none}}
+
+/* Wires theme (Kevin, Nov 10): live cables run down both sides and plug into every box. R2 = left (green), Claude = right (amber). */
+#app{position:relative}
+#app>*:not(#wires){position:relative;z-index:1}
+#wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+#wires .cable{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+#wires .sheath{fill:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:.08}
+#wires .pulse{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-dasharray:10 190;animation:wirepulse 3.2s linear infinite}
+#wires .pulse.b{animation-duration:4.1s;animation-direction:reverse}
+#wires .plug{stroke-width:1.5;fill:var(--bg)}
+#wires .r2{stroke:var(--r2)} #wires .cl{stroke:var(--claude)}
+@keyframes wirepulse{to{stroke-dashoffset:-200}}
+@media (min-width:900px){#app{padding-left:max(48px,env(safe-area-inset-left,0px));padding-right:max(48px,env(safe-area-inset-right,0px))}}
+@media (prefers-reduced-motion:reduce){#wires .pulse{animation:none;display:none}}
+.wires-paused #wires .pulse{animation-play-state:paused}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110074322';
+<script>/*build*/const WIRE_BUILD='20261110080056';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -1204,6 +1219,30 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
       n.classList.toggle('cont',prev===who);prev=who})};
   if(typeof DATA!=='undefined'&&DATA){try{renderTop();renderFeed()}catch(e){}}
 })();
+</script>
+<script>
+// Wires theme: one SVG behind the boxes; recomputed only when layout changes; pulses are CSS-only and pause when hidden.
+(function(){const app=document.getElementById('app');if(!app||!window.ResizeObserver)return;
+  const NS='http://www.w3.org/2000/svg';const svg=document.createElementNS(NS,'svg');svg.id='wires';svg.setAttribute('aria-hidden','true');app.prepend(svg);
+  let raf=0;const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+  function draw(){raf=0;const W=app.clientWidth,H=app.scrollHeight;svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.replaceChildren();
+    const cs=getComputedStyle(app);const pl=parseFloat(cs.paddingLeft)||16,pr=parseFloat(cs.paddingRight)||16;
+    const xl=Math.max(5,Math.round(pl/2)),xr=W-Math.max(5,Math.round(pr/2));const r=8;
+    const boxes=[...app.children].filter(c=>c!==svg&&c.offsetHeight>24&&getComputedStyle(c).display!=='none'&&c.tagName!=='HEADER');
+    if(!boxes.length)return;const top=boxes[0].offsetTop+14,bot=boxes[boxes.length-1].offsetTop+boxes[boxes.length-1].offsetHeight-14;
+    // trunks: R2 left, Claude right; each taps into every box (left near the top, right near the bottom) with a small plug
+    let dl='M'+xl+' '+(top-40),dr='M'+xr+' '+(top-40);const plugs=[];
+    for(const b of boxes){const y1=b.offsetTop+22,y2=b.offsetTop+b.offsetHeight-22;const x1=b.offsetLeft,x2=b.offsetLeft+b.offsetWidth;
+      dl+=' L'+xl+' '+(y1-r)+' Q'+xl+' '+y1+' '+(xl+r)+' '+y1+' L'+(x1-3)+' '+y1+' M'+xl+' '+(y1-r)+' L'+xl+' '+(y1+r);
+      dr+=' L'+xr+' '+(y2-r)+' Q'+xr+' '+y2+' '+(xr-r)+' '+y2+' L'+(x2+3)+' '+y2+' M'+xr+' '+(y2-r)+' L'+xr+' '+(y2+r);
+      plugs.push(['r2',x1-3,y1],['cl',x2+3,y2])}
+    dl+=' L'+xl+' '+(bot+40);dr+=' L'+xr+' '+(bot+40);
+    for(const [d,c] of [[dl,'r2'],[dr,'cl']]){svg.append(mk('path',{d,class:'sheath '+c}),mk('path',{d,class:'cable '+c}),mk('path',{d,class:'pulse '+c+(c==='cl'?' b':'')}))}
+    for(const [c,x,y] of plugs)svg.append(mk('circle',{cx:x,cy:y,r:3.2,class:'plug '+c}))}
+  const sched=()=>{if(!raf)raf=requestAnimationFrame(draw)};
+  const ro=new ResizeObserver(sched);ro.observe(app);new MutationObserver(()=>{for(const c of app.children)if(c!==svg)ro.observe(c);sched()}).observe(app,{childList:true});
+  for(const c of app.children)if(c!==svg)ro.observe(c);
+  document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('wires-paused',document.hidden));sched()})();
 </script>
 </body>
 </html>
