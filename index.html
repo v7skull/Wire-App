@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#121513">
+<meta name="theme-color" content="#0e1014">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Wire">
 <title>R2 ↔ Claude Wire</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 [hidden]{display:none!important}
 html,body{margin:0}
@@ -318,10 +318,90 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 .wake.ghost{background:transparent;color:var(--r2)}
 .wk.stale .wake:not(.ghost){background:var(--warn);border-color:var(--warn)}
 .r2url{flex:1 1 220px;min-width:0;font:14px var(--body);padding:8px 10px;border-radius:10px;border:1px solid var(--glass-edge);background:var(--glass-hi);color:var(--ink)}
+
+/* ===== Kortana skin (Kevin, Nov 9): graphite + ice blue HUD, two columns, needs-me strip, avatars ===== */
+:root:root:root{--bg:#0e1014;--surface:#14181e;--sunk:#1b2028;--ink:#e6e9ee;--muted:#8a93a0;--line:#2a313b;--accent:#7fb3d5;
+  --r2:#6fd3a8;--r2-soft:rgba(111,211,168,.12);--claude:#f2a873;--claude-soft:rgba(242,168,115,.12);--kevin:#7fb3d5;--kevin-soft:rgba(127,179,213,.12);--codex:#b9a8ff;
+  --warn:#d4a65a;--warn-soft:rgba(212,166,90,.14);--glass:#14181e;--glass-hi:#1b2028;--glass-edge:#2a313b;--glass-line:#2a313b;--glass-shadow:none;--glass-sheen:none;
+  --base:#0e1014;--blob1:transparent;--blob2:transparent;--blob3:transparent;
+  --display:"Inter",ui-sans-serif,system-ui,sans-serif;--body:"Inter",ui-sans-serif,system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color-scheme:dark}
+html,body{background:var(--bg)!important;background-image:none!important}
+body::before{content:none!important;display:none!important}
+.wrap{max-width:1240px;gap:20px;padding-block:0 56px}
+.panel,.tile,.wk,.newbar,.revopt,.card,.chip,.day,.pill,.rd,.revitem,.lane,.tk,.todo li{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+.panel,.tile,.wk,.newbar,.revopt{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:4px!important;position:relative}
+.card{background:var(--surface)!important;border-radius:4px!important}
+.chip,.btn,.sbtn,.wake,.done-btn,.addtask button,.addtask input,.addtask select,.tconfirm button,.r2url,.rd button,.revopt button,.go{border-radius:3px!important}
+.search input[type=search],.msg textarea,.revitem textarea,.todo .done-note,.rd blockquote{background:var(--sunk)!important;border:1px solid var(--line)!important;border-radius:3px!important}
+.panel:hover,.tile:hover,.wk:hover,.card:hover,.revopt:hover,.chip:hover,.sbtn:hover,.btn:hover{transform:none!important;box-shadow:none!important}
+.panel:hover{border-color:#3a4552!important}
+.panel::before,.panel::after{content:"";position:absolute;width:10px;height:10px;pointer-events:none;opacity:.75}
+.panel::before{top:-1px;left:-1px;border-top:1px solid var(--accent);border-left:1px solid var(--accent)}
+.panel::after{bottom:-1px;right:-1px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent)}
+h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-transform:uppercase;color:var(--accent)!important;display:flex;align-items:center;gap:8px}
+.chip[aria-pressed="true"]{background:var(--accent)!important;color:var(--bg)!important;border-color:var(--accent)!important}
+.lane{background:var(--sunk)!important;border-radius:4px!important;border-color:var(--line)!important}
+.tk{background:var(--surface)!important;border-radius:3px!important}
+.hint,#app>header .sub{display:none!important}
+/* header */
+#app>header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;align-items:center;gap:14px;padding-block:14px 12px;margin:0;border-bottom:1px solid var(--line)}
+#app>header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.55}
+body::after{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:21}
+.kbrand{display:flex;align-items:center;gap:10px;font:700 16px var(--body);letter-spacing:.04em}
+.kmark{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent);border-radius:3px;font:600 13px var(--mono)}
+.ksub{font:500 11px var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.ksearch{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 380px;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:8px 12px;color:var(--muted);font:14px var(--body);cursor:pointer;text-align:left}
+.ksearch kbd{margin-left:auto;font:11px var(--mono);border:1px solid var(--line);border-radius:3px;padding:1px 6px}
+.ksearch:hover{border-color:var(--accent);color:var(--ink)}
+#app>header .stamp{font:11px var(--mono)!important;color:var(--muted);max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:760px){.ksub,#app>header .stamp{display:none}.ksearch{flex:1}}
+/* search drawer */
+section[aria-labelledby="search-h"]:not(.open){display:none!important}
+/* needs-me strip */
+.kstrip{display:flex;flex-wrap:wrap;gap:8px}
+.kchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:8px 12px;font:14px var(--body);color:var(--ink);cursor:pointer;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(127,179,213,.06)}
+.kchip b{font-variant-numeric:tabular-nums}
+.kchip.hot{border-color:var(--warn)} .kchip.hot b{color:var(--warn)}
+.kchip.zero{color:var(--muted)}
+.kchip .kd{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.kchip .kd.on{animation:kpulse 1.8s ease-in-out infinite}
+.kbar{width:84px;height:5px;background:var(--sunk);border-radius:9px;overflow:hidden}.kbar i{display:block;height:100%;background:var(--r2);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+@keyframes kpulse{50%{opacity:.35}}
+/* two columns */
+.kcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.kcol{display:grid;gap:20px;min-width:0;align-content:start}
+@media (max-width:920px){.kcols{grid-template-columns:minmax(0,1fr)}}
+.kcol .top{grid-template-columns:minmax(0,1fr)!important}
+.kcol .board{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kcol .board .backlog{grid-column:1/-1}
+.kcol .score{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important}
+/* avatars */
+.av{width:24px;height:24px;border-radius:4px;display:inline-grid;place-items:center;font:600 9.5px var(--mono);color:#0e1014;flex:none;vertical-align:middle}
+.av.R2{background:var(--r2)} .av.Codex{background:var(--codex)} .av.Claude{background:var(--claude)} .av.Kevin{background:var(--kevin)}
+.lane h3{display:flex;align-items:center;gap:6px}
+.lane h3 .av{width:20px;height:20px;font-size:8.5px}
+/* single-lane feed with avatars and grouping */
+.kcol .lanes-head{display:none}
+.kcol .feed::before{display:none}
+.kcol .ev{grid-template-columns:28px minmax(0,1fr)!important;gap:10px}
+.kcol .ev .node{display:none!important}
+.kcol .ev>.av{grid-column:1;grid-row:1;margin-top:8px}
+.kcol .ev .card{grid-column:2!important;justify-self:stretch!important;max-width:none!important;text-align:left!important;border:1px solid var(--line)!important;border-left:2px solid var(--line)!important;background:var(--surface)!important}
+.kcol .ev.R2 .card{border-left-color:var(--r2)!important} .kcol .ev.Codex .card{border-left-color:var(--codex)!important}
+.kcol .ev.Claude .card{border-left-color:var(--claude)!important} .kcol .ev.Kevin .card{border-left-color:var(--kevin)!important;background:var(--kevin-soft)!important}
+.kcol .ev .meta,.kcol .ev .links{justify-content:flex-start!important}
+.kcol .ev.cont{margin-top:-6px}
+.kcol .ev.cont>.av{visibility:hidden}
+.kcol .ev.cont .kind{display:none}
+.kcol .day{justify-self:start;background:var(--bg)!important;border-radius:3px!important}
+.info{margin-left:auto;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);display:inline-grid;place-items:center;font:600 10px var(--mono);color:var(--muted);cursor:help;background:transparent;letter-spacing:0;text-transform:none;flex:none;padding:0}
+.info:hover,.info:focus-visible{color:var(--ink);border-color:var(--accent)}
+.kpop{position:absolute;z-index:30;max-width:320px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);font:13px/1.45 var(--body);padding:10px 12px;border-radius:4px;text-transform:none;letter-spacing:0}
+@media (prefers-reduced-motion:reduce){.kchip .kd.on{animation:none}.kbar i{transition:none}}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110002433';
+<script>/*build*/const WIRE_BUILD='20261109203634';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -371,9 +451,9 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
     <div class="board" id="board">
       <div class="lane backlog" data-to="backlog"><h3>Your backlog</h3><div id="bl"></div>
         <form class="addtask" id="addtask"><input id="newtask" maxlength="200" placeholder="New task…" aria-label="New task"><select id="newwho" aria-label="Who does it"><option value="backlog">Backlog</option><option value="R2">R2</option><option value="Codex">Codex</option><option value="Claude">Claude</option></select><button type="submit">Add</button></form></div>
-      <div class="lane" data-to="R2"><h3>R2</h3><div id="ln-R2"></div></div>
-      <div class="lane" data-to="Codex"><h3>Codex</h3><div id="ln-Codex"></div></div>
-      <div class="lane" data-to="Claude"><h3>Claude</h3><div id="ln-Claude"></div></div>
+      <div class="lane" data-to="R2"><h3><span class="av R2">R2</span>R2</h3><div id="ln-R2"></div></div>
+      <div class="lane" data-to="Codex"><h3><span class="av Codex">CX</span>Codex</h3><div id="ln-Codex"></div></div>
+      <div class="lane" data-to="Claude"><h3><span class="av Claude">C</span>Claude</h3><div id="ln-Claude"></div></div>
     </div>
     <div class="tconfirm" id="tconfirm" hidden><span id="tcq"></span><button type="button" class="go" id="tcyes">Send</button><button type="button" id="tcno">Cancel</button></div>
     <p class="note" id="taskst"></p>
@@ -1068,6 +1148,59 @@ document.getElementById('scan').addEventListener('click',async()=>{
 if (!token) showSetup(); else refresh(true);
 setInterval(() => { if (token && !document.hidden) refresh(false); }, REFRESH_MS);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && token) refresh(false); });
+</script>
+<script>
+// ===== Kortana skin layout: header, needs-me strip, two columns, info pops, feed avatars =====
+(function(){
+  const app=document.getElementById('app');if(!app)return;
+  const q=s=>app.querySelector(s);
+  const hdr=app.querySelector(':scope>header');const stamp=document.getElementById('stamp');
+  const brand=el('div','kbrand');brand.append(el('span','kmark','W'),el('span',null,'Wire'),el('span','ksub','R2 · Codex · Claude'));
+  const sb=el('button','ksearch');sb.type='button';sb.id='ksearch';sb.append(el('span',null,'⌕  Search the hub'),el('kbd',null,'⌘K'));
+  hdr.replaceChildren(brand,sb,stamp);
+  const sp=document.querySelector('section[aria-labelledby="search-h"]');
+  const strip=el('nav','kstrip');strip.id='kstrip';strip.setAttribute('aria-label','At a glance');
+  const cols=el('div','kcols'),L=el('div','kcol'),R=el('div','kcol');cols.append(L,R);
+  const newbar=document.getElementById('newbar');
+  hdr.after(strip);(newbar||strip).after(cols);if(newbar)strip.after(newbar);
+  cols.before(sp);
+  const pick=sel=>document.querySelector(sel);
+  [pick('section[aria-labelledby="wait-h"]'),pick('#reviewp'),pick('#readyp'),pick('#tasksp'),pick('section[aria-labelledby="msg-h"]')].forEach(n=>n&&L.append(n));
+  [pick('#working'),pick('section.top'),pick('#donep'),pick('#score'),pick('section[aria-labelledby="feed-h"]')].forEach(n=>n&&R.append(n));
+  const toggleSearch=open=>{sp.classList.toggle('open',open);if(open){sp.scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>{const i=document.getElementById('sq');i&&i.focus()},200)}};
+  sb.addEventListener('click',()=>toggleSearch(!sp.classList.contains('open')));
+  document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();toggleSearch(true)}else if(e.key==='Escape'&&sp.classList.contains('open')&&document.activeElement&&document.activeElement.id==='sq'){toggleSearch(false)}});
+  // explanations -> (i) buttons
+  let pop=null;const closePop=()=>{if(pop){pop.remove();pop=null}};
+  document.addEventListener('click',e=>{if(!e.target.closest('.info'))closePop()});
+  app.querySelectorAll('.hint').forEach(h=>{const sec=h.closest('section,.panel');const h2=sec&&sec.querySelector('h2');if(!h2||h2.querySelector('.info'))return;
+    const b=el('button','info','i');b.type='button';b.setAttribute('aria-label','About this section');b.title=h.textContent.trim();
+    b.addEventListener('click',e=>{e.stopPropagation();closePop();pop=el('div','kpop',h.textContent.trim());document.body.append(pop);const r=b.getBoundingClientRect();pop.style.top=(scrollY+r.bottom+6)+'px';pop.style.left=Math.max(12,Math.min(innerWidth-340,scrollX+r.right-320))+'px'});
+    h2.append(b)});
+  // strip
+  function salesOf(){const t=(DATA&&DATA.score||[]).find(x=>/^sales/i.test(x.label));const m=t&&t.value.match(/(\d+)\s*\/\s*(\d+)/);return m?[+m[1],+m[2]]:null}
+  function lastBy(who){const e=(DATA.events||[]).find(x=>x.actor===who);return e?Date.now()-new Date(e.t).getTime():Infinity}
+  window.renderStrip=function(){if(!DATA)return;strip.replaceChildren();
+    const mk=(txt,n,href,cls)=>{const a=el('a','kchip'+(cls?' '+cls:''));a.href=href;if(n!=null){a.append(el('b',null,String(n)),document.createTextNode(' '+txt))}else a.textContent=txt;strip.append(a);return a};
+    const w=(DATA.waiting||[]).length,p=(DATA.review||[]).length,r=(DATA.ready||[]).length;
+    mk(w===1?'waiting on you':'waiting on you',w,'#wait-h',w?'hot':'zero');
+    if(p)mk(p===1?'pick to make':'picks to make',p,'#rev-h','hot');
+    if(r)mk('ready to send',r,'#ready-h','hot');
+    for(const [who,lim] of [['R2',30],['Codex',90]]){const ms=lastBy(who),on=ms<lim*60000;const a=el('a','kchip');a.href=who==='R2'?'#working':'#feed-h';
+      const d=el('span','kd'+(on?' on':''));d.style.background=on?'var(--'+who.toLowerCase()+')':'var(--muted)';a.append(d,document.createTextNode(who+(on?' working':' quiet')+(isFinite(ms)&&!on?' · '+ago(ms):'')));strip.append(a)}
+    const s=salesOf();if(s){const a=el('a','kchip');a.href='#score';const dl=Math.max(0,Math.ceil((new Date('2026-11-30T23:59:59-04:00')-Date.now())/864e5));
+      const bar=el('span','kbar');const i=el('i');i.style.width='0%';bar.append(i);a.append(document.createTextNode('Sales '),el('b',null,s[0]+' / '+s[1]),bar,document.createTextNode(' '+dl+' days left'));strip.append(a);requestAnimationFrame(()=>{i.style.width=Math.max(2,Math.min(100,100*s[0]/s[1]))+'%'})}
+    strip.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}}))};
+  const _rt=window.renderTop;window.renderTop=renderTop=function(){_rt.apply(this,arguments);try{renderStrip()}catch(e){}};
+  // feed avatars + grouping
+  const AV={R2:'R2',Codex:'CX',Claude:'C',Kevin:'K'};
+  const _rf=renderFeed;renderFeed=function(){_rf.apply(this,arguments);let prev=null;
+    document.querySelectorAll('#feed > *').forEach(n=>{if(!n.classList.contains('ev')){prev=null;return}
+      const who=['R2','Codex','Claude','Kevin'].find(w=>n.classList.contains(w))||'R2';
+      if(!n.querySelector(':scope>.av')){n.prepend(el('span','av '+who,AV[who]))}
+      n.classList.toggle('cont',prev===who);prev=who})};
+  if(typeof DATA!=='undefined'&&DATA){try{renderTop();renderFeed()}catch(e){}}
+})();
 </script>
 </body>
 </html>
