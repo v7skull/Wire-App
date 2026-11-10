@@ -9,3 +9,4 @@ self.addEventListener('fetch', e => {
     '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="background:#0e1014;color:#e6e9ee;font:16px system-ui;padding:24px">The Wire needs an internet connection. Reconnect and reload.</body>',
     { headers: { 'Content-Type': 'text/html; charset=utf-8' } })));
 });
+self.addEventListener('notificationclick', e => { e.notification.close(); e.waitUntil(self.clients.matchAll({ type: 'window' }).then(cs => { for (const c of cs) { if ('focus' in c) return c.focus(); } return self.clients.openWindow('./#send'); })); });
