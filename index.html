@@ -219,6 +219,11 @@ code{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px
 .bar i{display:block;height:100%;background:var(--r2);border-radius:99px}
 .revitem{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
 .revitem:first-child{border-top:0;margin-top:0;padding-top:0}
+.tile.long .val{font:600 16px/1.35 var(--body);letter-spacing:0}
+.tile.clamp{cursor:pointer}.tile.clamp:not(.open) .val{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tile.clamp:not(.open) .sub{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile.clamp:not(.open)::after{content:'more';display:block;margin-top:4px;font:500 11px var(--mono);color:var(--accent,#7fb3d5)}
+.revitem.noimg .d{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:0}
 .revitem .q{font-weight:600}.revitem .d{color:var(--muted);font-size:14px;margin:2px 0 8px}
 .revgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px}
 .revopt{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);display:grid}
@@ -412,10 +417,68 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .wires-paused .wpulse{animation-play-state:paused}
 
 .regen{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}.regen .rl{color:var(--muted);font-size:13px}.seg{display:flex;gap:4px}.seg .chip[aria-checked=true]{border-color:var(--accent);color:var(--accent);background:var(--sunk)}
+
+.swipehint{display:none}
+/* Phone layout (Kevin, Nov 10): no squeezed columns; swipe the task lanes sideways */
+@media (max-width:640px){
+  .wrap{padding-left:max(12px,env(safe-area-inset-left,0px))!important;padding-right:max(12px,env(safe-area-inset-right,0px))!important}
+  .board,.kcol .board{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px!important;padding-bottom:8px;margin:0 -12px;padding-left:12px;padding-right:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .board::-webkit-scrollbar{display:none}
+  .board,.kcol .board{align-items:flex-start}
+  .board>.lane{flex:0 0 84%;scroll-snap-align:start;min-width:0;padding:12px!important;max-height:72vh;overflow-y:auto;overscroll-behavior:contain}
+  .board .backlog{grid-column:auto!important}
+  .lane .tk{font-size:14px!important}
+  .tk .tx{overflow-wrap:break-word;word-break:normal}
+  .score{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+  .tile{padding:10px 12px}
+  .tile .val{font-size:22px}
+  .tile.long .val{font-size:15px}
+  .panel{padding-left:14px!important;padding-right:14px!important}
+  h1{font-size:26px!important}
+  #questions .t,#inbox .t{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .swipehint{display:block;margin:0 0 8px;font:500 12px var(--mono);color:var(--muted)}
+  #tasksp>.hint{display:none}
+}
+
+/* Phone v2 (Kevin, Nov 10 12:07): organized into 4 tabs, nothing squeezed into narrow columns */
+.ptabs{display:none}
+@media (max-width:640px){
+  #wires{display:none!important}
+  #app{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important;gap:14px!important}
+  #app>header p{display:none}
+  #app>header h1{font-size:22px!important;margin:0}
+  #app[data-ptab=today]>[data-tab]:not([data-tab=today]),
+  #app[data-ptab=tasks]>[data-tab]:not([data-tab=tasks]),
+  #app[data-ptab=send]>[data-tab]:not([data-tab=send]),
+  #app[data-ptab=hub]>[data-tab]:not([data-tab=hub]){display:none!important}
+  /* task lanes: stacked full width, no sideways swipe */
+  .board,.kcol .board{display:grid!important;grid-template-columns:minmax(0,1fr)!important;overflow:visible!important;margin:0!important;padding:0!important;gap:10px!important}
+  .board>.lane{flex:none!important;max-height:none!important;overflow:visible!important;width:auto!important}
+  .swipehint{display:none!important}
+  /* Today: things waiting on Kevin first */
+  #app>header,#newbar{order:-2}
+  #reviewp{order:-1}
+  #app>.waiting{order:0}
+  #score{order:1}
+  #working{order:2}
+  #app>[data-tab]:not(#reviewp):not(.waiting):not(#score):not(#working){order:3}
+  /* label above the text, so text gets the full width */
+  .list li{flex-direction:column;gap:4px}
+  .list li .pill{align-self:flex-start}
+  .list li span.t{line-height:1.45}
+  .ptabs{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:50;
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+    background:var(--bg);border-top:1px solid var(--line)}
+  .ptabs button{appearance:none;border:0;background:none;color:var(--muted);font:600 12px/1.1 var(--sans,system-ui);padding:8px 2px 6px;border-radius:10px;display:grid;justify-items:center;gap:4px;position:relative;min-height:48px}
+  .ptabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ptabs button[aria-selected=true]{color:var(--ink);background:var(--line)}
+  .ptabs button .bd{position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--claude);color:#111;font:700 10px/16px var(--mono);display:none}
+  .ptabs button .bd.on{display:block}
+}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110100014';
+<script>/*build*/const WIRE_BUILD='20261110121001';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -462,6 +525,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   <section class="panel tasks" id="tasksp" aria-labelledby="tasks-h">
     <h2 id="tasks-h">Tasks</h2>
     <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog. To move a task, grab its ⠿ handle and drag it onto R2, Codex or Claude (or from one AI to another, or back to your backlog). On the phone you can also press and hold the card, then drag. Codex tasks go through R2. Live-change approvals still go in R2's chat.</p>
+    <p class="swipehint">Swipe sideways for R2, Codex and Claude →</p>
     <div class="board" id="board">
       <div class="lane backlog" data-to="backlog"><h3>Your backlog</h3><div id="bl"></div>
         <form class="addtask" id="addtask"><input id="newtask" maxlength="200" placeholder="New task…" aria-label="New task"><select id="newwho" aria-label="Who does it"><option value="backlog">Backlog</option><option value="R2">R2</option><option value="Codex">Codex</option><option value="Claude">Claude</option></select><button type="submit">Add</button></form></div>
@@ -774,13 +838,15 @@ function renderTop() {if(!DATA)return;
   document.getElementById('updated').textContent = DATA.now['Updated'] ? 'Updated ' + DATA.now['Updated'].replace(/\s*America\/Puerto_Rico.*$/, '') : 'From STATUS.md';
   const ib = document.getElementById('inbox'); ib.replaceChildren();
   if (!DATA.inbox.length) ib.append(el('li', null, 'Nothing waiting.'));
-  for (const i of DATA.inbox) { const li = el('li'); const s = i.status.toLowerCase(); const cls = s.startsWith('done') || s.startsWith('superseded') ? 'done' : s.startsWith('taken') ? 'taken' : 'new';
+  const ibOpen = x => !/^(done|superseded)/i.test(x.status); const ibAll = [...DATA.inbox.filter(ibOpen), ...DATA.inbox.filter(x => !ibOpen(x))]; const ibShow = ib.dataset.all === '1' ? ibAll : ibAll.slice(0, 8);
+  for (const i of ibShow) { const li = el('li'); const s = i.status.toLowerCase(); const cls = s.startsWith('done') || s.startsWith('superseded') ? 'done' : s.startsWith('taken') ? 'taken' : 'new';
     const who = /for codex/i.test(i.title) ? 'R2/Codex' : 'R2'; const lab = cls === 'done' ? '✓✓ Done' : cls === 'taken' ? '✓ ' + who + ' on it' : 'Sent';
     const tm = i.title.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})/); let age = '';
     if (cls === 'new' && tm) { const mins = Math.round((Date.now() - new Date(tm[1] + 'T' + tm[2].padStart(5, '0') + ':00-04:00')) / 60000); if (mins >= 30) age = mins < 120 ? ' · ' + mins + ' min, not picked up' : ' · ' + Math.round(mins / 60) + ' h, not picked up'; }
     const t = el('span', 't', i.title.replace(/^\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2}\s*·\s*/, '').replace(/\s*—\s*New\s*$/, ''));
     if (age) t.append(el('span', 'late', age));
     li.append(el('span', 'pill ' + cls, lab), t); ib.append(li); }
+  if (ibAll.length > 8) { const li = el('li', 'more'); const bt = el('button', 'sbtn', ib.dataset.all === '1' ? 'Show fewer' : 'Show all ' + ibAll.length); bt.type = 'button'; bt.addEventListener('click', () => { ib.dataset.all = ib.dataset.all === '1' ? '' : '1'; renderTop(); }); li.append(bt); ib.append(li); }
   const q = document.getElementById('questions'); q.replaceChildren();
   const open = DATA.questions.filter(x => !x.answered), ans = DATA.questions.filter(x => x.answered);
   if (!DATA.questions.length) q.append(el('li', null, 'No questions.'));
@@ -958,15 +1024,15 @@ if(!lastSeen){store.set('wire.lastSeen',Date.now())}
 function parseScore(md){if(!/^## Scoreboard\s*$/m.test(md))return null;const out=[];
   for(const l of section(md,'Scoreboard').split('\n')){const m=l.match(/^- ([^:]+):\s*(.+)$/);if(m){const [v,sub]=m[2].split(/\s+\(/);out.push({label:m[1].trim(),links:linkMd(m[2])[1],value:linkMd(v.trim())[0],sub:sub?sub.replace(/\)\s*$/,''):''})}}return out}
 function renderScore(){if(!DATA)return;const box=document.getElementById('score');box.replaceChildren();const s=DATA.score;if(!s||!s.length)return;
-  const srcs=s.filter(t=>/^sources?$/i.test(t.label));for(const t of s.filter(t=>!/^sources?$/i.test(t.label))){const main=/^sales/i.test(t.label);const d=el('div','tile'+(main?' main':''));d.append(el('div','lab',t.label),el('div','val',t.value));
+  const srcs=s.filter(t=>/^sources?$/i.test(t.label));for(const t of s.filter(t=>!/^sources?$/i.test(t.label))){const main=/^sales/i.test(t.label);const long=!main&&t.value.length>16;const d=el('div','tile'+(main?' main':'')+(long?' long':''));d.append(el('div','lab',t.label),el('div','val',t.value));if(long||(t.sub||'').length>70){d.classList.add('clamp');d.tabIndex=0;d.title='Tap to show all';const tg=()=>d.classList.toggle('open');d.addEventListener('click',tg);d.addEventListener('keydown',e=>{if(e.key==='Enter')tg()})}
     if(main){const m=t.value.match(/(\d+)\s*\/\s*(\d+)/);const dl=Math.ceil((new Date('2026-11-30T23:59:59-04:00')-Date.now())/864e5);
       d.append(el('div','sub',(t.sub?t.sub+' · ':'')+(dl>0?dl+' days left':'deadline passed')));if(m){const b=el('div','bar');const i=el('i');i.style.width=Math.min(100,100*m[1]/m[2])+'%';b.append(i);d.append(b)}}
-    else if(t.sub)d.append(el('div','sub',t.sub));box.append(d)}
+    else if(t.sub)d.append(el('div','sub',linkMd(t.sub)[0].replace(/\(\s*\)/g,'')));box.append(d)}
   if(srcs.length){const f=el('div','score-src');f.append(el('span',null,'Sources:'));for(const t of srcs){for(const l of (t.links||[])){const a=el('a',null,l.label);a.href=l.href;a.target='_blank';a.rel='noopener';f.append(a)}if(!(t.links||[]).length)f.append(el('span',null,t.value))}box.append(f)}}
 // review images: STATUS "## Review images" lines "- **Question** — detail [A label](path.png) [B label](path.jpg)"
 function parseReview(md){if(!/^## Review images\s*$/m.test(md))return [];return section(md,'Review images').split('\n').filter(l=>l.startsWith('- **')).map(l=>{
   const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]?\s*(.*)$/)||[,l,''];const opts=[];m[2].replace(/\[([^\]]+)\]\(([^)]+\.(?:png|jpe?g|webp|gif))\)/gi,(_,a,b)=>{opts.push({label:a,path:b.replace(/^\.?\//,'')});return ''});
-  return {raw:l,q:m[1],detail:m[2].replace(/\s*\[[^\]]+\]\([^)]+\)/g,'').trim(),opts}})}
+  return {raw:l,q:m[1],detail:m[2].replace(/\s*\[[^\]]+\]\([^)]+\)/g,'').replace(/\(\s*[;,]?\s*\)/g,'').replace(/^[\s,.;:]+/,'').replace(/\s+([,.;])/g,'$1').trim(),opts}})}
 function openZoom(opts,idx){document.querySelector('.zoom')?.remove();
   const z=el('div','zoom fit');const bar=el('div','zbar');const title=el('b');
   const mk=(t,l,f)=>{const b=el('button',null,t);b.type='button';b.setAttribute('aria-label',l);b.addEventListener('click',e=>{e.stopPropagation();f()});return b};
@@ -989,7 +1055,7 @@ async function imgURL(path){if(imgCache[path])return imgCache[path];const r=awai
 let revKey='';
 function renderReview(){if(!DATA)return;const items=DATA.review||[];const p=document.getElementById('reviewp');const key=items.map(i=>i.raw).join('\n');if(key===revKey)return;revKey=key;
   p.hidden=!items.length;const box=document.getElementById('revlist');box.replaceChildren();
-  for(const it of items){const wrap=el('div','revitem');wrap.append(el('div','q',it.q));if(it.detail)wrap.append(el('div','d',it.detail));
+  for(const it of items){const wrap=el('div','revitem'+(it.opts.length?'':' noimg'));wrap.append(el('div','q',it.q.replace(/:\s*$/,'')));if(it.detail)wrap.append(el('div','d',it.detail));if(!it.opts.length){box.append(wrap);continue}
     const grid=el('div','revgrid');const note=el('textarea');note.rows=2;note.placeholder='Optional note for R2 (changes you want)';note.setAttribute('aria-label','Optional note for R2');const st=el('span','note');
     for(const o of it.opts){const c=el('div','revopt');const img=el('img');img.alt=o.label;img.loading='lazy';imgURL(o.path).then(u=>img.src=u).catch(()=>{img.alt='Image could not load: '+o.label});
       img.addEventListener('click',()=>openZoom(it.opts,it.opts.indexOf(o)));
@@ -1270,6 +1336,25 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;btn.hidden=false});
   btn.addEventListener('click',async()=>{if(!ev)return;ev.prompt();try{await ev.userChoice}catch{}ev=null;btn.hidden=true});
   window.addEventListener('appinstalled',()=>{btn.hidden=true})})();
+</script>
+<nav class="ptabs" id="ptabs" role="tablist" aria-label="Wire sections">
+<button role="tab" data-t="today" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today<span class="bd" id="bd-today"></span></button>
+<button role="tab" data-t="tasks" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>Tasks</button>
+<button role="tab" data-t="send" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg>Send<span class="bd" id="bd-send"></span></button>
+<button role="tab" data-t="hub" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>Hub</button>
+</nav>
+<script>
+(function(){const app=document.getElementById('app'),nav=document.getElementById('ptabs');if(!app||!nav)return;
+const map={score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
+for(const e of app.children){if(e.id==='wires'||e.tagName==='HEADER'||e.id==='newbar')continue;let t=map[e.id];
+ if(!t){if(e.classList.contains('waiting'))t='today';else if(e.classList.contains('msg'))t='send';else t='hub'}e.dataset.tab=t}
+let cur='today';try{cur=localStorage.getItem('wire.ptab')||'today'}catch{}
+function set(t,scroll){cur=t;app.dataset.ptab=t;for(const b of nav.children)b.setAttribute('aria-selected',b.dataset.t===t);try{localStorage.setItem('wire.ptab',t)}catch{};if(scroll)window.scrollTo(0,0)}
+nav.addEventListener('click',e=>{const b=e.target.closest('button');if(b)set(b.dataset.t,true)});set(cur,false);
+function badges(){const r=document.getElementById('reviewp'),rd=document.getElementById('readyp');
+ const n1=r&&!r.hidden?r.querySelectorAll('.revitem,.rd').length||1:0,n2=rd&&!rd.hidden?rd.querySelectorAll('li').length||1:0;
+ const a=document.getElementById('bd-today'),c=document.getElementById('bd-send');a.textContent=n1;a.classList.toggle('on',n1>0);c.textContent=n2;c.classList.toggle('on',n2>0)}
+badges();setInterval(badges,3000)})();
 </script>
 </body>
 </html>
