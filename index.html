@@ -342,7 +342,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .chip[aria-pressed="true"]{background:var(--accent)!important;color:var(--bg)!important;border-color:var(--accent)!important}
 .lane{background:var(--sunk)!important;border-radius:4px!important;border-color:var(--line)!important}
 .tk{background:var(--surface)!important;border-radius:3px!important}
-.hint,#app>header .sub{display:none!important}
+
 /* Hover lift (Kevin, Nov 9): boxes rise and glow under the cursor. Transform/opacity only, mouse devices only. */
 .panel,.tile,.wk,.card,.revopt,.kchip,.tk{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}
 .panel::before,.panel::after{transition:width .18s ease,height .18s ease,opacity .18s ease}
@@ -353,20 +353,6 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   .tk:hover{border-color:rgba(127,179,213,.45)!important;box-shadow:0 0 14px -6px rgba(127,179,213,.3)!important}
 }
 @media (prefers-reduced-motion:reduce){.panel:hover,.tile:hover,.wk:hover,.card:hover,.revopt:hover,.kchip:hover{transform:none!important}}
-/* header */
-#app>header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;align-items:center;gap:14px;padding-block:14px 12px;margin:0;border-bottom:1px solid var(--line)}
-#app>header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.55}
-body::after{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:21}
-.kbrand{display:flex;align-items:center;gap:10px;font:700 16px var(--body);letter-spacing:.04em}
-.kmark{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent);border-radius:3px;font:600 13px var(--mono)}
-.ksub{font:500 11px var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
-.ksearch{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 380px;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:8px 12px;color:var(--muted);font:14px var(--body);cursor:pointer;text-align:left}
-.ksearch kbd{margin-left:auto;font:11px var(--mono);border:1px solid var(--line);border-radius:3px;padding:1px 6px}
-.ksearch:hover{border-color:var(--accent);color:var(--ink)}
-#app>header .stamp{font:11px var(--mono)!important;color:var(--muted);max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:760px){.ksub,#app>header .stamp{display:none}.ksearch{flex:1}}
-/* search drawer */
-section[aria-labelledby="search-h"]:not(.open){display:none!important}
 /* needs-me strip */
 .kstrip{display:flex;flex-wrap:wrap;gap:8px}
 .kchip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:8px 12px;font:14px var(--body);color:var(--ink);cursor:pointer;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(127,179,213,.06)}
@@ -411,7 +397,7 @@ section[aria-labelledby="search-h"]:not(.open){display:none!important}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109204636';
+<script>/*build*/const WIRE_BUILD='20261109210702';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -1162,6 +1148,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
 <script>
 // ===== Kortana skin layout: header, needs-me strip, two columns, info pops, feed avatars =====
 (function(){
+  let lay='classic';try{lay=localStorage.getItem('wire.layout')||'classic'}catch(e){}
+  if(lay!=='cols')return; // Kevin (Nov 9 21:06) prefers the earlier layout; colors + hover stay
   const app=document.getElementById('app');if(!app)return;
   const q=s=>app.querySelector(s);
   const hdr=app.querySelector(':scope>header');const stamp=document.getElementById('stamp');
