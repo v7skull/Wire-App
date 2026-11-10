@@ -321,7 +321,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110002424';
+<script>/*build*/const WIRE_BUILD='20261110002433';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -711,7 +711,7 @@ function setConn(state, text) {
 
 async function refresh(first) {
   try {
-    setConn('busy', first ? 'Loading from GitHub…' : document.getElementById('stamp').textContent);
+    setConn('busy', first ? (Object.keys(commitCache||{}).length<20?'First load on this device: reading the hub history, about a minute…':'Loading from GitHub…') : document.getElementById('stamp').textContent);
     const changed = await load();
     renderTop(); if (changed || first) renderFeed(); setBadge();
     setConn('ok', 'Live · checked ' + fmtTime.format(new Date()) + ' · refreshes every minute');
