@@ -45,11 +45,11 @@ img{max-width:100%}
 @media (max-width:560px){.donep li{grid-template-columns:52px 1fr}.donep li .w{grid-column:2}.donep li .wt{grid-column:1/-1}}
 
 .late{color:var(--warn);font-size:12px;font-weight:600}
-.board{display:grid;grid-template-columns:1.2fr repeat(3,1fr);gap:10px}
-@media (max-width:760px){.board{grid-template-columns:repeat(3,1fr);gap:6px}.lane{padding:8px}.lane .tk{font-size:12px}.board .backlog{grid-column:1/-1}}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}.board>.backlog{grid-column:1/-1}
+@media (max-width:760px){.board{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.lane{padding:8px}.lane .tk{font-size:12px}.board .backlog{grid-column:1/-1}}
 .lane{border:1px dashed var(--line);border-radius:12px;padding:10px;min-height:120px;transition:background .15s,border-color .15s}
 .lane h3{margin:0 0 8px;font:600 12px var(--body);letter-spacing:.06em;text-transform:uppercase}
-.lane[data-to="R2"] h3{color:var(--r2)} .lane[data-to="Codex"] h3{color:var(--codex)} .lane[data-to="Claude"] h3{color:var(--claude)}
+.lane[data-to="R2"] h3{color:var(--r2)} .lane[data-to^="Codex"] h3{color:var(--codex)} .lane[data-to="Claude"] h3{color:var(--claude)}
 .lane.over{background:var(--kevin-soft);border-color:var(--kevin);border-style:solid}
 .tk{display:flex;gap:8px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px;font-size:13px}
 .tk .grip{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;color:var(--muted);font-size:20px;line-height:1;min-width:36px;min-height:36px;margin:-4px 0 -4px -4px;border:0;border-radius:8px;background:transparent;display:grid;place-items:center;flex:none}.tk .grip:hover{background:var(--line);color:var(--ink)}.tk .grip:active{cursor:grabbing}
@@ -479,7 +479,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110155621';
+<script>/*build*/const WIRE_BUILD='20261110160725';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -525,13 +525,15 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 
   <section class="panel tasks" id="tasksp" aria-labelledby="tasks-h">
     <h2 id="tasks-h">Tasks</h2>
-    <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog. To move a task, grab its ⠿ handle and drag it onto R2, Codex or Claude (or from one AI to another, or back to your backlog). On the phone you can also press and hold the card, then drag. Codex tasks go through R2. Live-change approvals still go in R2's chat.</p>
+    <p class="hint" style="margin:0 0 10px">Add a task and pick who does it, or keep it in your backlog. To move a task, grab its ⠿ handle and drag it onto R2, a Codex chat or Claude (or back to your backlog). On the phone, press and hold the card, then drag. Codex tasks go straight to that chat: you'll get a “check the hub” alert. Approvals still go in each chat directly.</p>
     <p class="swipehint">Swipe sideways for R2, Codex and Claude →</p>
     <div class="board" id="board">
       <div class="lane backlog" data-to="backlog"><h3>Your backlog</h3><div id="bl"></div>
         <form class="addtask" id="addtask"><input id="newtask" maxlength="200" placeholder="New task…" aria-label="New task"><select id="newwho" aria-label="Who does it"><option value="backlog">Backlog</option><option value="R2">R2</option><option value="Codex">Codex</option><option value="Claude">Claude</option></select><button type="submit">Add</button></form></div>
       <div class="lane" data-to="R2"><h3><span class="av R2">R2</span>R2</h3><div id="ln-R2"></div></div>
-      <div class="lane" data-to="Codex"><h3><span class="av Codex">CX</span>Codex chats</h3><div id="ln-Codex"></div></div>
+      <div class="lane" data-to="Codex-K"><h3><span class="av Codex">K</span>Codex-K · Kortana</h3><div id="ln-Codex-K"></div></div>
+      <div class="lane" data-to="Codex-J"><h3><span class="av Codex">J</span>Codex-J · Jackie</h3><div id="ln-Codex-J"></div></div>
+      <div class="lane" data-to="Codex-P"><h3><span class="av Codex">P</span>Codex-P · Products</h3><div id="ln-Codex-P"></div></div>
       <div class="lane" data-to="Claude"><h3><span class="av Claude">C</span>Claude</h3><div id="ln-Claude"></div></div>
     </div>
     <div class="tconfirm" id="tconfirm" hidden><span id="tcq"></span><button type="button" class="go" id="tcyes">Send</button><button type="button" id="tcno">Cancel</button></div>
@@ -1093,6 +1095,17 @@ const openSt=st=>!/^(done|superseded)/i.test(st);
 function laneItems(to){if(!DATA)return[];if(to==='Claude')return (DATA.cinbox||[]).filter(i=>openSt(i.status));
   const all=(DATA.inbox||[]).filter(i=>openSt(i.status));return to==='Codex'?all.filter(i=>/for codex/i.test(i.title)):all.filter(i=>!/for codex/i.test(i.title))}
 function stLabel(to,st){const who=to==='Codex'?'R2/Codex':to;return /^taken|^in progress|^working/i.test(st)?['taken',who+' is on it']:/^new/i.test(st)?['new','Sent · not picked up yet']:['',st]}
+const chatOf=t=>/Codex-P|Products|cocoa build|kevin-products/i.test(t)?'Codex-P':/Codex-J|Jackie|Fortress/i.test(t)?'Codex-J':/Codex-K|Kortana/i.test(t)?'Codex-K':null;
+const agoTxt=t=>{const m=Math.round((Date.now()-new Date(t))/60000);return m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
+function codexLane(chat,box){const ev=DATA.events||[];
+  const waiting=(DATA.ready||[]).filter(r=>r.chat===chat);
+  for(const r of waiting){const c=el('div','tk');const tx=el('span','tx',r.title.replace(/^Codex-[KJP]\s*·\s*/,''));tx.append(el('span','st new','Waiting: say “check the hub” in '+chat));c.append(tx);box.append(c)}
+  const sent=ev.filter(e=>/^\[kevin-done\] Sent in (Codex|Codex-[KJP]) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[kevin-done\] Sent in (Codex|Codex-[KJP]) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
+  const lastWork=ev.filter(e=>(e.actor==='Codex'&&e.sub===chat)||(e.actor!=='Claude'&&!/^\[kevin-/.test(e.title)&&chatOf(e.title)===chat&&(/^\[for-claude\]/.test(e.title)||(/^\[status\]/.test(e.title)&&/\b(finished|complete|ready|PASS|FAIL|delivered)\b/i.test(e.title)&&!/\bR2\b|art\b/i.test(e.title))))).sort((a,b)=>new Date(b.t)-new Date(a.t))[0];
+  sent.forEach((x,k)=>{const c=el('div','tk');const tx=el('span','tx',x.t.replace(/^(Codex-[KJP]|Kortana|Jackie|Products)\s*[·:]\s*/,''));const done=lastWork&&new Date(lastWork.t)>new Date(x.e.t);
+    tx.append(el('span','st '+(k===0&&!done?'taken':''),k===0?(done?'Sent '+agoTxt(x.e.t)+' · update posted':'Sent '+agoTxt(x.e.t)+' · working on it'):'Sent '+agoTxt(x.e.t)));c.append(tx);box.append(c)});
+  if(lastWork){const c=el('div','tk');const tx=el('span','tx','Latest: '+lastWork.title.replace(/^\[(status|for-claude)\]\s*/,'').slice(0,90));tx.append(el('span','st',agoTxt(lastWork.t)));c.append(tx);box.append(c)}
+  if(!box.childElementCount)box.append(el('p','note','Nothing yet.'))}
 function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DATA.inbox,DATA.cinbox,(DATA.events||[]).find(e=>e.actor==='Codex')?.t,Math.floor(Date.now()/600000)]);if(key===taskKey)return;taskKey=key;
   const bl=document.getElementById('bl');bl.replaceChildren();
   if(!(DATA.backlog||[]).length)bl.append(el('p','note','No tasks yet. Add one below.'));
@@ -1100,11 +1113,9 @@ function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DA
     const sel=el('select');sel.setAttribute('aria-label','Send task to');[['','Send to…'],['R2','R2'],['Codex-K','Codex-K · Kortana'],['Codex-J','Codex-J · Jackie'],['Codex-P','Codex-P · Products'],['Claude','Claude'],['del','Remove']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;sel.append(o)});
     sel.addEventListener('change',()=>{const v=sel.value;sel.value='';if(v==='del')removeTask(t);else if(v)askAssign({t,src:'backlog'},v)});
     const pl={t,src:'backlog'};bindDrag(c,g,pl);c.append(g,el('span','tx',t),sel);bl.append(c)});
-  for(const to of ['R2','Codex','Claude']){const box=document.getElementById('ln-'+to);box.replaceChildren();const items=to==='Codex'?[]:laneItems(to).slice(0,6);
-    if(to==='Codex'){for(const r of (DATA.ready||[]).filter(r=>r.chat&&r.chat.startsWith('Codex'))){const c=el('div','tk');const tx=el('span','tx',r.chat+': '+r.title.replace(/^Codex-[KJP]\s*·\s*/,''));tx.append(el('span','st new','Waiting for you to say “check the hub”'));c.append(tx);box.append(c)}
-      for(const sub of ['Codex-K','Codex-J','Codex-P']){const last=(DATA.events||[]).find(e=>e.actor==='Codex'&&e.sub===sub);if(!last)continue;const mins=Math.round((Date.now()-new Date(last.t))/60000);const ago=mins<60?mins+' min ago':Math.round(mins/60)+' h ago';const active=mins<=90;
-        const c=el('div','tk');const tx=el('span','tx',sub+(active?' · working':' · idle'));tx.append(el('span','st '+(active?'taken':''),'Last commit '+ago+': '+last.title.slice(0,60)));c.append(tx);box.append(c)}}
-    if(!items.length&&!(to==='Codex'&&box.childElementCount))box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
+  for(const to of ['R2','Codex-K','Codex-J','Codex-P','Claude']){const box=document.getElementById('ln-'+to);if(!box)continue;box.replaceChildren();if(to.startsWith('Codex')){codexLane(to,box);continue}const items=laneItems(to).slice(0,6);
+    
+    if(!items.length)box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
     for(const it of items){const c=el('div','tk');const clean=it.title.replace(/\s*\((Kevin via Wire|Kevin|Kevin, relayed by Claude)\)\s*$/,'').replace(/^[\d-]+ [\d:]+ · /,'').replace(/^\d{1,2}:\d{2} · /,'').replace(/\s*—\s*(New|Taken)\s*$/,'');const tx=el('span','tx',clean);const [cls,lab]=stLabel(to,it.status);tx.append(el('span','st '+cls,lab));c.append(tx);
       const pl={t:clean.replace(/^For Codex:\s*/i,''),src:'inbox',from:to,head:it.title,taken:cls==='taken'};c.title='Drag to give this to someone else, or back to your backlog';const g=el('button','grip','⠿');g.type='button';g.title='Grab and drag to someone else';g.setAttribute('aria-label','Drag task');c.prepend(g);bindDrag(c,g,pl);box.append(c)}}}
 let dragging=false;
