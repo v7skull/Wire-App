@@ -321,7 +321,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109224224';
+<script>/*build*/const WIRE_BUILD='20261110002424';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -468,7 +468,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;tr
 </div>
 
 <script>
-window.addEventListener('error',e=>{try{let b=document.getElementById('errbar');if(!b){b=document.createElement('div');b.id='errbar';b.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#7a1f1f;color:#fff;font:12px/1.4 monospace;padding:8px 10px;border-radius:8px;white-space:pre-wrap';document.body.append(b)}b.textContent='Error (screenshot this for Claude): '+e.message+' @ '+(e.filename||'').split('/').pop()+':'+e.lineno+':'+e.colno}catch{}});
+window.addEventListener('error',e=>{if(e&&!e.filename&&!e.error&&/^Script error\.?$/.test(e.message||''))return;/* cross-origin noise from browser extensions */try{let b=document.getElementById('errbar');if(!b){b=document.createElement('div');b.id='errbar';b.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#7a1f1f;color:#fff;font:12px/1.4 monospace;padding:8px 10px;border-radius:8px;white-space:pre-wrap';document.body.append(b)}b.textContent='Error (screenshot this for Claude): '+e.message+' @ '+(e.filename||'').split('/').pop()+':'+e.lineno+':'+e.colno}catch{}});
 window.addEventListener('unhandledrejection',e=>{window.dispatchEvent(new ErrorEvent('error',{message:'Promise: '+(e.reason&&e.reason.message||e.reason)}))});
 </script>
 <script>
