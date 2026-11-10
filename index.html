@@ -413,7 +413,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110081728';
+<script>/*build*/const WIRE_BUILD='20261110084342';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -629,11 +629,15 @@ async function commitDetail(sha) {
 
 // Codex works in the Kortana repo (branches only), so read its commits too. Skipped quietly if the token can't see that repo.
 const KREPO='https://api.github.com/repos/'+OWNER+'/Kortana';let codexNote='';
-async function loadCodex(){try{const br=await gh(KREPO+'/branches?per_page=30');const seen=new Set(),out=[];
-  const lists=await Promise.all(br.map(b=>gh(KREPO+'/commits?sha='+encodeURIComponent(b.name)+'&per_page=15').then(cs=>cs.map(c=>[b.name,c])).catch(()=>[])));
-  for(const [bn,c] of lists.flat()){if(seen.has(c.sha))continue;seen.add(c.sha);
-    out.push({actor:'Codex',kind:'code',t:c.commit.author.date,title:c.commit.message.split('\n')[0],detail:c.commit.message.split('\n')[0]+'  ·  branch '+bn,links:[{label:'view commit',href:'https://github.com/'+OWNER+'/Kortana/commit/'+c.sha}]})}
-  codexNote='';return out}catch(e){codexNote=(e.message==='auth'||e.message==='not-found')?'To see Codex here, give your Wire token read access to the Kortana repo.':'';return[]}}
+async function loadCodex(){const out=[],seen=new Set();let denied=0;
+  // Codex-K: every Kortana branch. Codex-J: only jackie-source branches named codex/* (R2 also commits there).
+  for(const [repo,label,only] of [['Kortana','Kortana',null],['jackie-source','Jackie','codex/']]){
+    try{const base='https://api.github.com/repos/'+OWNER+'/'+repo;let br=await gh(base+'/branches?per_page=50');if(only)br=br.filter(b=>b.name.startsWith(only));
+      const lists=await Promise.all(br.map(b=>gh(base+'/commits?sha='+encodeURIComponent(b.name)+'&per_page=15').then(cs=>cs.map(c=>[b.name,c])).catch(()=>[])));
+      for(const [bn,c] of lists.flat()){if(seen.has(c.sha))continue;seen.add(c.sha);const t=c.commit.message.split('\n')[0];
+        out.push({actor:'Codex',kind:'code',t:c.commit.author.date,title:label+': '+t,detail:t+'  ·  '+repo+' branch '+bn,links:[{label:'view commit',href:'https://github.com/'+OWNER+'/'+repo+'/commit/'+c.sha}]})}}
+    catch(e){if(e.message==='auth'||e.message==='not-found')denied++}}
+  codexNote=denied?'To see all Codex work here, give your Wire token read access to the Kortana and jackie-source repos.':'';return out}
 async function load() {
   const commits = await gh('/commits?sha=main&per_page=100');
   const head = commits[0] && commits[0].sha;
