@@ -412,7 +412,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110080056';
+<script>/*build*/const WIRE_BUILD='20261110080748';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -1243,6 +1243,16 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
   const ro=new ResizeObserver(sched);ro.observe(app);new MutationObserver(()=>{for(const c of app.children)if(c!==svg)ro.observe(c);sched()}).observe(app,{childList:true});
   for(const c of app.children)if(c!==svg)ro.observe(c);
   document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('wires-paused',document.hidden));sched()})();
+</script>
+<script>
+// Installable app: register the no-cache service worker and show an "Install app" button when the browser allows it.
+(function(){try{if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch{}
+  let ev=null;const btn=document.createElement('button');btn.type='button';btn.className='chip';btn.id='installapp';btn.textContent='Install app';btn.hidden=true;
+  btn.title='Open the Wire in its own window, without the browser';
+  const host=document.querySelector('#app>header')||document.body;host.append(btn);
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;btn.hidden=false});
+  btn.addEventListener('click',async()=>{if(!ev)return;ev.prompt();try{await ev.userChoice}catch{}ev=null;btn.hidden=true});
+  window.addEventListener('appinstalled',()=>{btn.hidden=true})})();
 </script>
 </body>
 </html>
