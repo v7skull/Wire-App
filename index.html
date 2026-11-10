@@ -411,7 +411,7 @@ section[aria-labelledby="search-h"]:not(.open){display:none!important}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261109204304';
+<script>/*build*/const WIRE_BUILD='20261109204636';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -1110,14 +1110,14 @@ function renderDone(){if(!DATA)return;const day=prDay(Date.now()-doneDay*864e5);
   document.getElementById('donenote').textContent=items.length?'Counts deliverables, reviews, Kortana commits and your check-offs; routine status lines are left out.':'Nothing finished '+(doneDay?'yesterday':'yet today')+'.'}
 document.querySelectorAll('#donep [data-day]').forEach(b=>b.addEventListener('click',()=>{doneDay=+b.dataset.day;document.querySelectorAll('#donep [data-day]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));doneKey='';renderDone()}));
 // ready-to-send drafts: STATUS "## Ready to send" lines "- **Title** — exact message text" (use " // " for line breaks)
-function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];return section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map(l=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const chat=/\[chat\]\s*$/i.test(m[1]);return {raw:l,chat,title:m[1].replace(/\s*\[chat\]\s*$/i,''),text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean)}
+function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];return section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map(l=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const tg=(m[1].match(/\[(chat|codex)\]\s*$/i)||[])[1];const chat=tg?(/codex/i.test(tg)?'Codex':'R2'):null;return {raw:l,chat,title:m[1].replace(/\s*\[(chat|codex)\]\s*$/i,''),text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean)}
 let readyKey='';
 function renderReady(){if(!DATA)return;const items=DATA.ready||[];const key=items.map(i=>i.raw).join('\n');if(key===readyKey)return;readyKey=key;
   const p=document.getElementById('readyp');p.hidden=!items.length;const box=document.getElementById('readylist');box.replaceChildren();
   for(const it of items){const d=el('div','rd');d.append(el('div','q',it.title),el('blockquote',null,it.text));const row=el('div','row');const st=el('span','note');
-    if(it.chat){d.append(el('div','note','Approval: paste this in R2\'s ChatGPT chat. R2 doesn\'t accept live-change approvals sent through the Wire.'));
-      const cp=el('button','go','Copy for R2\'s chat');cp.type='button';cp.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(it.text);st.textContent='Copied. Paste it in R2\'s chat, then tap Done.'}catch{const ta=el('textarea');ta.value=it.text;document.body.append(ta);ta.select();try{document.execCommand('copy');st.textContent='Copied. Paste it in R2\'s chat, then tap Done.'}catch{st.textContent='Select the text above and copy it.'}ta.remove()}});
-      const dn=el('button',null,'Done, I sent it');dn.type='button';dn.addEventListener('click',async()=>{dn.disabled=true;try{await withRetry(async()=>{const f=await getFile('STATUS.md');const ls=f.text.split('\n');const k=ls.indexOf(it.raw);if(k<0)return;ls.splice(k,1);await putFile('STATUS.md',ls.join('\n'),f.sha,'[kevin-done] Sent in R2 chat: '+it.title.slice(0,70))});st.textContent='Marked as sent.';setTimeout(()=>refresh(false),1500)}catch(e){dn.disabled=false;st.textContent='Could not save ('+e.message+').'}});
+    if(it.chat){d.append(el('div','note',(it.chat==='Codex'?'Paste this in the Codex chat (Kortana work goes there).':'Approval: paste this in R2\'s ChatGPT chat. R2 doesn\'t accept live-change approvals sent through the Wire.')));
+      const cp=el('button','go','Copy for '+(it.chat==='Codex'?'the Codex chat':'R2\'s chat'));cp.type='button';cp.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(it.text);st.textContent='Copied. Paste it in '+(it.chat==='Codex'?'the Codex chat':'R2\'s chat')+', then tap Done.'}catch{const ta=el('textarea');ta.value=it.text;document.body.append(ta);ta.select();try{document.execCommand('copy');st.textContent='Copied. Paste it in '+(it.chat==='Codex'?'the Codex chat':'R2\'s chat')+', then tap Done.'}catch{st.textContent='Select the text above and copy it.'}ta.remove()}});
+      const dn=el('button',null,'Done, I sent it');dn.type='button';dn.addEventListener('click',async()=>{dn.disabled=true;try{await withRetry(async()=>{const f=await getFile('STATUS.md');const ls=f.text.split('\n');const k=ls.indexOf(it.raw);if(k<0)return;ls.splice(k,1);await putFile('STATUS.md',ls.join('\n'),f.sha,'[kevin-done] Sent in '+it.chat+' chat: '+it.title.slice(0,70))});st.textContent='Marked as sent.';setTimeout(()=>refresh(false),1500)}catch(e){dn.disabled=false;st.textContent='Could not save ('+e.message+').'}});
       row.append(cp,dn,st);d.append(row);box.append(d);continue}
     const go=el('button','go','Send to R2');go.type='button';
     go.addEventListener('click',async()=>{if(go.dataset.arm!=='1'){go.dataset.arm='1';go.textContent='Tap again to send';return}go.disabled=true;go.textContent='Sending…';
