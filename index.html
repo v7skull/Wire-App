@@ -410,10 +410,12 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 @media (min-width:900px){#app{padding-left:max(48px,env(safe-area-inset-left,0px));padding-right:max(48px,env(safe-area-inset-right,0px))}}
 @media (prefers-reduced-motion:reduce){.wpulse{display:none}}
 .wires-paused .wpulse{animation-play-state:paused}
+
+.regen{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}.regen .rl{color:var(--muted);font-size:13px}.seg{display:flex;gap:4px}.seg .chip[aria-checked=true]{border-color:var(--accent);color:var(--accent);background:var(--sunk)}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110084342';
+<script>/*build*/const WIRE_BUILD='20261110100014';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -996,7 +998,18 @@ function renderReview(){if(!DATA)return;const items=DATA.review||[];const p=docu
         try{await sendToInbox('Picked: '+o.label+' for "'+it.q+'"',"Kevin picked **"+o.label+"** for: "+it.q+(note.value.trim()?"\n\nKevin's note: "+note.value.trim():''),'[kevin-pick]',it.raw);st.textContent='Sent. R2 and Claude will see it.';setTimeout(()=>refresh(false),1500)}
         catch(e){b.disabled=false;b.dataset.arm='';b.textContent='Pick this';st.textContent=e.message==='nowrite'?'Your token is read-only.':'Could not save ('+e.message+').'}});
       rb.append(b);c.append(img,rb);grid.append(c)}
-    wrap.append(grid,note,st);box.append(wrap)}}
+    // None of these: ask R2 for new options at a chosen design level (Kevin, Nov 10)
+    const regen=el('div','regen');regen.append(el('span','rl','None of these?'));
+    const lv=el('div','seg');lv.setAttribute('role','radiogroup');lv.setAttribute('aria-label','Design level for new options');let level='More';
+    const LEVELS={Less:'Less design: cleaner and simpler, still polished and readable at thumbnail size.',Medium:'Medium design: balanced, with some illustration, color and texture.',More:'More design: bold and eye-catching, with rich festive color, full illustrations, textures/patterns, big display type and depth. Must out-pop the top 3 competitors at thumbnail size.'};
+    for(const k of Object.keys(LEVELS)){const bt=el('button','chip',k);bt.type='button';bt.setAttribute('role','radio');bt.setAttribute('aria-checked',String(k===level));
+      bt.addEventListener('click',()=>{level=k;lv.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',String(x===bt)))});lv.append(bt)}
+    const gen=el('button','go','Make new options');gen.type='button';
+    gen.addEventListener('click',async()=>{if(gen.dataset.arm!=='1'){gen.dataset.arm='1';gen.textContent='Tap again: new options, '+level;return}gen.disabled=true;gen.textContent='Sending…';
+      try{await sendToInbox('New options needed ('+level+' design) for "'+it.q+'"',"Kevin didn't like any of the current options for: "+it.q+"\n\nMake 2 NEW options at this level. "+LEVELS[level]+"\nDon't reuse the rejected options; follow decisions/2026-11-10_designs-that-pop.md. Post them to Review images when ready."+(note.value.trim()?"\n\nKevin's note: "+note.value.trim():''),'[kevin-msg]',it.raw);st.textContent='Sent to R2: new '+level.toLowerCase()+'-design options. Claude sees it too.';setTimeout(()=>refresh(false),1500)}
+      catch(e){gen.disabled=false;gen.dataset.arm='';gen.textContent='Make new options';st.textContent=e.message==='nowrite'?'Your token is read-only.':'Could not send ('+e.message+').'}});
+    regen.append(lv,gen);
+    wrap.append(grid,note,regen,st);box.append(wrap)}}
 // write a Kevin item to INBOX-R2.md (and optionally remove a STATUS line)
 async function sendToInbox(title,body,tag,removeStatusLine){
   const stamp=prStamp();const hm=stamp.slice(0,10)+' '+stamp.slice(11,16);const safeTitle=title.replace(/[\r\n#]/g,' ').slice(0,80);
