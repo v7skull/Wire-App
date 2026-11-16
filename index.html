@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0e1014">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Wire">
-<title>R2 ↔ Claude Wire</title>
+<title>Wire · Kevin's team hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
@@ -494,12 +494,12 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261116015204';
+<script>/*build*/const WIRE_BUILD='20261116015524';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
 <div class="wrap setup" id="setup" hidden>
-  <h1><span class="a">R2</span> ↔ <span class="b">Claude</span> wire</h1>
+  <h1><span class="a">Wire</span> · <span class="b">team hub</span></h1>
   <p class="sub">This page reads your private hub on GitHub. It needs a read-only key (a "fine-grained token") once. The key stays in this browser on this computer.</p>
   <div class="panel">
     <h2>One-time setup, about 2 minutes</h2>
@@ -523,7 +523,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 <div class="wrap" id="app">
   <header>
     <div>
-      <h1><span class="a">R2</span> ↔ <span class="b">Claude</span> wire</h1>
+      <h1><span class="a">Wire</span> · <span class="b">team hub</span></h1>
       <p class="sub">Everything R2 and Claude post to the shared hub, with your decisions in the middle. R2 builds on the left, Claude reviews on the right.</p>
     </div>
     <div class="stamp" id="stamp"></div>
@@ -1023,8 +1023,8 @@ document.getElementById('ask').addEventListener('click',ask);
 let lastSeen=store.get('wire.lastSeen',0), prevWaiting=null, prevKevinEv=null, alertsOn=store.get('wire.alerts',false);
 function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)();const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.18);setTimeout(()=>a.close(),400)}catch{}}
 function notifyKevin(msg){if(!alertsOn)return;beep();document.title='(!) Wire · '+msg.slice(0,40);
-  try{if('Notification' in window&&Notification.permission==='granted')new Notification('R2 ↔ Claude Wire',{body:msg})}catch{}}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.title='R2 ↔ Claude Wire'});
+  try{if('Notification' in window&&Notification.permission==='granted')new Notification('Wire · Kevin\'s team hub',{body:msg})}catch{}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)document.title='Wire · Kevin\'s team hub'});
 function checkAlerts(){if(!DATA)return;
   const w=(DATA.waiting||[]).map(x=>x.raw);const kev=DATA.events.filter(e=>/^\[for-kevin\]/.test(e.title)).map(e=>e.t);
   if(prevWaiting){const added=(DATA.waiting||[]).filter(x=>!prevWaiting.includes(x.raw));if(added.length)notifyKevin('Waiting on you: '+added[0].action)}
@@ -1241,7 +1241,7 @@ function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];const ou
 
 // ---- Alerts: tell Kevin when a Codex chat has new work ("check the hub") ----
 let seenReady=null;function readyAlerts(){if(!DATA)return;const cx=(DATA.ready||[]).filter(r=>r.chat&&(r.chat.startsWith('Codex')||/^Claude-[JF]$/.test(r.chat))&&r.tier!=='WAIT'&&r.tier!=='PC');
-  const n=(DATA.ready||[]).length;try{document.title=(n?'('+n+') ':'')+'R2 ↔ Claude wire';if(navigator.setAppBadge)n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch{}
+  const n=(DATA.ready||[]).length;try{document.title=(n?'('+n+') ':'')+'Wire · team hub';if(navigator.setAppBadge)n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch{}
   let old;try{old=JSON.parse(localStorage.getItem('wire.seenReady')||'null')}catch{}if(seenReady===null)seenReady=new Set(old||cx.map(r=>r.raw));
   const fresh=cx.filter(r=>!seenReady.has(r.raw));for(const r of cx)seenReady.add(r.raw);try{localStorage.setItem('wire.seenReady',JSON.stringify([...seenReady].slice(-200)))}catch{}
   const chats=[...new Set(fresh.map(r=>r.chat))];if(!chats.length)return;
