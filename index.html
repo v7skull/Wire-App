@@ -256,6 +256,21 @@ code{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px
 .rd button.go{background:var(--claude);color:var(--bg)}
 .rd button.go[data-arm="1"]{background:var(--ink);border-color:var(--ink)}
 .rd .note{font:12px var(--mono);color:var(--muted)}
+.order{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:14px}
+.order .oh{font:600 14px var(--display);margin-bottom:8px}
+.order ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.order .olink{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:28px 46px 70px minmax(0,1fr);gap:8px;align-items:center;width:100%;padding:6px 8px;border-radius:8px;font-size:13px}
+.order .olink:hover,.order .olink:focus-visible{background:var(--surface);outline:1px solid var(--line)}
+.order .ot{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order .ow{font:600 12px var(--mono);color:var(--muted)}
+.order li.t-wait,.order li.t-pc{opacity:.6}
+.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--claude);color:var(--bg);font:700 12px var(--mono)}
+.tier{font:700 11px var(--mono);letter-spacing:.06em}
+.t-now .tier,.tier.t-now{color:var(--r2)} .t-next .tier,.tier.t-next{color:var(--kevin)} .t-wait .tier,.tier.t-wait{color:var(--warn)} .t-pc .tier,.tier.t-pc{color:var(--codex)}
+.rd .step{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.rd .step .when{font:12px var(--mono);color:var(--warn)}
+.rd.wait .q,.rd.wait blockquote{opacity:.7}
+.rd .for.Art{color:var(--warn)}
 .pairbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px}
 .pairbox .in{background:var(--surface);color:var(--ink);border-radius:12px;padding:18px;max-width:360px;width:100%;display:grid;gap:12px;text-align:center}
 .pairbox .qr{background:#fff;padding:14px;border-radius:8px;justify-self:center;line-height:0}
@@ -475,11 +490,11 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   .ptabs button .bd{position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--claude);color:#111;font:700 10px/16px var(--mono);display:none}
   .ptabs button .bd.on{display:block}
 }
-.rd .for{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.rd .for.Codex{color:var(--codex)}.rd .for.R2{color:var(--r2)}.rd .for.Claude{color:var(--claude)}
+.rd .for{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.rd .for.Codex{color:var(--codex)}.rd .for.R2{color:var(--r2)}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261110165929';
+<script>/*build*/const WIRE_BUILD='20261116015204';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -532,8 +547,10 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
         <form class="addtask" id="addtask"><input id="newtask" maxlength="200" placeholder="New task…" aria-label="New task"><select id="newwho" aria-label="Who does it"><option value="backlog">Backlog</option><option value="R2">R2</option><option value="Codex">Codex</option><option value="Claude">Claude</option></select><button type="submit">Add</button></form></div>
       <div class="lane" data-to="R2"><h3><span class="av R2">R2</span>R2</h3><div id="ln-R2"></div></div>
       <div class="lane" data-to="Codex-K"><h3><span class="av Codex">K</span>Codex-K · Kortana</h3><div id="ln-Codex-K"></div></div>
-      <div class="lane" data-to="Claude-J"><h3><span class="av Claude">J</span>Claude-J · Jackie</h3><div id="ln-Claude-J"></div></div>
+      <div class="lane" data-to="Codex-J"><h3><span class="av Codex">J</span>Codex-J · Jackie</h3><div id="ln-Codex-J"></div></div>
       <div class="lane" data-to="Codex-P"><h3><span class="av Codex">P</span>Codex-P · Products</h3><div id="ln-Codex-P"></div></div>
+      <div class="lane" data-to="Claude-J"><h3><span class="av Codex">CJ</span>Claude-J · Jackie (PC)</h3><div id="ln-Claude-J"></div></div>
+      <div class="lane" data-to="Claude-F"><h3><span class="av Codex">CF</span>Claude-F · Fiverr</h3><div id="ln-Claude-F"></div></div>
       <div class="lane" data-to="Claude"><h3><span class="av Claude">C</span>Claude</h3><div id="ln-Claude"></div></div>
     </div>
     <div class="tconfirm" id="tconfirm" hidden><span id="tcq"></span><button type="button" class="go" id="tcyes">Send</button><button type="button" id="tcno">Cancel</button></div>
@@ -700,8 +717,8 @@ async function commitDetail(sha) {
 const KREPO='https://api.github.com/repos/'+OWNER+'/Kortana';let codexNote='';
 async function loadCodex(){const out=[],seen=new Set();let denied=0;
   // Codex-K: every Kortana branch. Codex-J: only jackie-source branches named codex/* (R2 also commits there).
-  for(const [repo,label,only,sub] of [['Kortana','Kortana',null,'Codex-K'],['jackie-source','Jackie','c','Claude-J'],['kevin-products','Products',null,'Codex-P']]){
-    try{const base='https://api.github.com/repos/'+OWNER+'/'+repo;let br=await gh(base+'/branches?per_page=50');if(only)br=br.filter(b=>only==='c'?/^(codex|claude)\//.test(b.name):b.name.startsWith(only));
+  for(const [repo,label,only,sub] of [['Kortana','Kortana',null,'Codex-K'],['jackie-source','Jackie','codex/','Codex-J'],['kevin-products','Products',null,'Codex-P'],['jackie-source','Claude-J','claude/','Claude-J']]){
+    try{const base='https://api.github.com/repos/'+OWNER+'/'+repo;let br=await gh(base+'/branches?per_page=50');if(only)br=br.filter(b=>b.name.startsWith(only));
       const lists=await Promise.all(br.map(b=>gh(base+'/commits?sha='+encodeURIComponent(b.name)+'&per_page=15').then(cs=>cs.map(c=>[b.name,c])).catch(()=>[])));
       for(const [bn,c] of lists.flat()){if(seen.has(c.sha))continue;seen.add(c.sha);const t=c.commit.message.split('\n')[0];
         out.push({actor:'Codex',sub,kind:'code',t:c.commit.author.date,title:label+': '+t,detail:t+'  ·  '+repo+' branch '+bn,links:[{label:'view commit',href:'https://github.com/'+OWNER+'/'+repo+'/commit/'+c.sha}]})}}
@@ -1095,12 +1112,12 @@ const openSt=st=>!/^(done|superseded)/i.test(st);
 function laneItems(to){if(!DATA)return[];if(to==='Claude')return (DATA.cinbox||[]).filter(i=>openSt(i.status));
   const all=(DATA.inbox||[]).filter(i=>openSt(i.status));return to==='Codex'?all.filter(i=>/for codex/i.test(i.title)):all.filter(i=>!/for codex/i.test(i.title))}
 function stLabel(to,st){const who=to==='Codex'?'R2/Codex':to;return /^taken|^in progress|^working/i.test(st)?['taken',who+' is on it']:/^new/i.test(st)?['new','Sent · not picked up yet']:['',st]}
-const chatOf=t=>/Codex-P|Products|cocoa build|kevin-products/i.test(t)?'Codex-P':/Claude-J|Codex-J|Jackie|Fortress/i.test(t)?'Claude-J':/Codex-K|Kortana/i.test(t)?'Codex-K':null;
+const chatOf=t=>/Claude-F/i.test(t)?'Claude-F':/Claude-J/i.test(t)?'Claude-J':/Codex-P|Products|cocoa build|kevin-products/i.test(t)?'Codex-P':/Codex-J|Jackie|Fortress/i.test(t)?'Codex-J':/Codex-K|Kortana/i.test(t)?'Codex-K':null;
 const agoTxt=t=>{const m=Math.round((Date.now()-new Date(t))/60000);return m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
 function codexLane(chat,box){const ev=DATA.events||[];
   const waiting=(DATA.ready||[]).filter(r=>r.chat===chat);
-  for(const r of waiting){const c=el('div','tk');const tx=el('span','tx',r.title.replace(/^Codex-[KJP]\s*·\s*/,''));tx.append(el('span','st new','Waiting: say “check the hub” in '+chat));c.append(tx);box.append(c)}
-  const sent=ev.filter(e=>/^\[kevin-done\] Sent in (Codex|Codex-[KJP]) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[kevin-done\] Sent in (Codex|Codex-[KJP]) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
+  for(const r of waiting){const c=el('div','tk');const tx=el('span','tx',r.title.replace(/^(Codex-[KJP]|Claude-[JF])\s*[·:]\s*/,''));tx.append(el('span','st new','Waiting: say “check the hub” in '+chat));c.append(tx);box.append(c)}
+  const sent=ev.filter(e=>/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]|Claude-[JF]) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
   const lastWork=ev.filter(e=>(e.actor==='Codex'&&e.sub===chat)||(e.actor!=='Claude'&&!/^\[kevin-/.test(e.title)&&chatOf(e.title)===chat&&(/^\[for-claude\]/.test(e.title)||(/^\[status\]/.test(e.title)&&/\b(finished|complete|ready|PASS|FAIL|delivered)\b/i.test(e.title)&&!/\bR2\b|art\b/i.test(e.title))))).sort((a,b)=>new Date(b.t)-new Date(a.t))[0];
   sent.forEach((x,k)=>{const c=el('div','tk');const tx=el('span','tx',x.t.replace(/^(Codex-[KJP]|Kortana|Jackie|Products)\s*[·:]\s*/,''));const done=lastWork&&new Date(lastWork.t)>new Date(x.e.t);
     tx.append(el('span','st '+(k===0&&!done?'taken':''),k===0?(done?'Sent '+agoTxt(x.e.t)+' · update posted':'Sent '+agoTxt(x.e.t)+' · working on it'):'Sent '+agoTxt(x.e.t)));c.append(tx);box.append(c)});
@@ -1110,10 +1127,10 @@ function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DA
   const bl=document.getElementById('bl');bl.replaceChildren();
   if(!(DATA.backlog||[]).length)bl.append(el('p','note','No tasks yet. Add one below.'));
   (DATA.backlog||[]).forEach(t=>{const c=el('div','tk');c.dataset.task=t;const g=el('button','grip','⠿');g.type='button';g.title='Grab and drag onto R2, Codex or Claude';g.setAttribute('aria-label','Drag task');
-    const sel=el('select');sel.setAttribute('aria-label','Send task to');[['','Send to…'],['R2','R2'],['Codex-K','Codex-K · Kortana'],['Claude-J','Claude-J · Jackie'],['Codex-P','Codex-P · Products'],['Claude','Claude'],['del','Remove']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;sel.append(o)});
+    const sel=el('select');sel.setAttribute('aria-label','Send task to');[['','Send to…'],['R2','R2'],['Codex-K','Codex-K · Kortana'],['Codex-J','Codex-J · Jackie'],['Codex-P','Codex-P · Products'],['Claude-J','Claude-J · Jackie (PC)'],['Claude-F','Claude-F · Fiverr'],['Claude','Claude'],['del','Remove']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;sel.append(o)});
     sel.addEventListener('change',()=>{const v=sel.value;sel.value='';if(v==='del')removeTask(t);else if(v)askAssign({t,src:'backlog'},v)});
     const pl={t,src:'backlog'};bindDrag(c,g,pl);c.append(g,el('span','tx',t),sel);bl.append(c)});
-  for(const to of ['R2','Codex-K','Claude-J','Codex-P','Claude']){const box=document.getElementById('ln-'+to);if(!box)continue;box.replaceChildren();if(to.startsWith('Codex')||to==='Claude-J'){codexLane(to,box);continue}const items=laneItems(to).slice(0,6);
+  for(const to of ['R2','Codex-K','Codex-J','Codex-P','Claude-J','Claude-F','Claude']){const box=document.getElementById('ln-'+to);if(!box)continue;box.replaceChildren();if(to.startsWith('Codex')||/^Claude-[JF]$/.test(to)){codexLane(to,box);continue}const items=laneItems(to).slice(0,6);
     
     if(!items.length)box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
     for(const it of items){const c=el('div','tk');const clean=it.title.replace(/\s*\((Kevin via Wire|Kevin|Kevin, relayed by Claude)\)\s*$/,'').replace(/^[\d-]+ [\d:]+ · /,'').replace(/^\d{1,2}:\d{2} · /,'').replace(/\s*—\s*(New|Taken)\s*$/,'');const tx=el('span','tx',clean);const [cls,lab]=stLabel(to,it.status);tx.append(el('span','st '+cls,lab));c.append(tx);
@@ -1159,8 +1176,8 @@ async function sendToClaude(title,body){const stamp=prStamp();const hm=stamp.sli
     const s=f.text,i=s.indexOf('\n---\n');const item='\n## '+hm+' · '+safe+' (Kevin via Wire)\n\nFrom: Kevin (via Wire, his own GitHub account)\n\nStatus: **New**\n\n'+body.trim()+'\n\n---\n';
     await putFile('INBOX-CLAUDE.md',i<0?s+item:s.slice(0,i+5)+item+s.slice(i+5).replace(/^\n+/,'\n'),f.sha,'[for-claude] Kevin task: '+safe)})}
 let pending=null;
-const codexFor=t=>/kortana|voice|mic\b/i.test(t)?'Codex-K':/jackie|fortress|agent/i.test(t)?'Claude-J':'Codex-P';
-function askAssign(pl,to){if(to==='Codex')to=codexFor(pl.t);pending={pl,to};const b=document.getElementById('tconfirm');const dest=to==='backlog'?'your backlog':to+(/^Codex-|^Claude-J$/.test(to)?' (you\'ll get a “check the hub” alert)':'');
+const codexFor=t=>/kortana|voice|mic\b/i.test(t)?'Codex-K':/jackie|fortress|agent/i.test(t)?'Codex-J':'Codex-P';
+function askAssign(pl,to){if(to==='Codex')to=codexFor(pl.t);pending={pl,to};const b=document.getElementById('tconfirm');const dest=to==='backlog'?'your backlog':to+(/^Codex-/.test(to)?' (you\'ll get a “check the hub” alert)':'');
   document.getElementById('tcq').textContent=pl.src==='inbox'?(pl.taken?pl.from+' already started “'+pl.t+'”. Move it to '+dest+' anyway? '+pl.from+' will be told to stop.':'Move “'+pl.t+'” from '+pl.from+' to '+dest+'?'):'Send “'+pl.t+'” to '+dest+'?';b.hidden=false;b.scrollIntoView({block:'nearest',behavior:'smooth'})}
 document.getElementById('tcyes').addEventListener('click',()=>{const p=pending;pending=null;document.getElementById('tconfirm').hidden=true;if(p)(p.pl.src==='inbox'?reassign(p.pl,p.to):assign(p.pl.t,p.to,true))});
 document.getElementById('tcno').addEventListener('click',()=>{pending=null;document.getElementById('tconfirm').hidden=true;setTaskSt('Cancelled.')});
@@ -1174,17 +1191,17 @@ async function reassign(pl,to){setTaskSt('Moving to '+(to==='backlog'?'your back
   try{const why='(Kevin moved this from '+pl.from+' on the Wire task board.)';
     if(to==='backlog')await editBacklog(ls=>{let k=ls.findIndex(l=>/^## Backlog\s*$/.test(l));if(k<0){ls.push('## Backlog');k=ls.length-1}let j=k+1;while(j<ls.length&&ls[j].startsWith('- '))j++;ls.splice(j,0,'- '+pl.t)},'[kevin-task] Back to backlog: '+pl.t.slice(0,50));
     else if(to==='Claude')await sendToClaude(pl.t,'Kevin assigned this task to Claude from the Wire task board. '+why+'\n\n'+pl.t);
-    else if(/^Codex-|^Claude-J$/.test(to))await sendToCodex(to,pl.t,why);
+    else if(/^Codex-/.test(to)||/^Claude-[JF]$/.test(to))await sendToCodex(to,pl.t,why);
     else if(to==='Codex')await sendToInbox('For Codex: '+pl.t,'Kevin assigned this task to **Codex** from the Wire task board. '+why+' R2: hand it to the Codex task, supervise it under protocol 11, and keep this item\'s Status current.\n\n'+pl.t,'[kevin-msg]');
     else await sendToInbox(pl.t,'Kevin assigned this task to R2 from the Wire task board. '+why+' Mark it Taken when you start.\n\n'+pl.t,'[kevin-msg]');
     await supersede(pl.from==='Claude'?'INBOX-CLAUDE.md':'INBOX-R2.md',pl.head,to==='backlog'?'his backlog':to,pl.from==='Claude'?'[for-claude]':'[kevin-msg]');
     setTaskSt('Moved. '+pl.from+' is told to stop.');taskKey='';setTimeout(()=>refresh(false),1200)}
   catch(err){setTaskSt(err.message==='nowrite'?'Your token is read-only.':'Could not move ('+err.message+').')}}
-async function sendToCodex(chat,t,note){await withRetry(async()=>{const f=await getFile('STATUS.md');let s=f.text;const line='- **'+chat+' · Task: '+t.replace(/\*\*/g,'').replace(/\n/g,' ').slice(0,120)+' [codex]** — '+chat+': Kevin assigned this from the Wire task board. '+note+' '+t.replace(/\n/g,' // ')+' Work on a codex/ branch; post results to the hub with [for-claude]; no runs, installs or merges without Kevin\'s approval in your chat.';
+async function sendToCodex(chat,t,note){await withRetry(async()=>{const f=await getFile('STATUS.md');let s=f.text;const line='- **'+chat+' · Task: '+t.replace(/\*\*/g,'').replace(/\n/g,' ').slice(0,120)+' [codex]** — '+chat+': Kevin assigned this from the Wire task board. '+note+' '+t.replace(/\n/g,' // ')+(/^Claude-[JF]$/.test(chat)?' Work on a claude/ branch':' Work on a codex/ branch')+'; post results to the hub with [for-claude]; no runs, installs or merges without Kevin\'s approval in your chat.';
   if(!/^## Ready to send\s*$/m.test(s))s=s.replace(/\n*$/,'\n\n## Ready to send\n');s=s.replace(/^## Ready to send\s*$/m,m=>m+'\n'+line);await putFile('STATUS.md',s,f.sha,'[kevin-task] To '+chat+': '+t.slice(0,50))})}
 async function assign(t,to,fromBacklog=true){setTaskSt('Sending to '+to+'…');const card=[...document.querySelectorAll('#bl .tk')].find(c=>c.dataset.task===t);if(card)card.style.opacity='.4';
   try{if(to==='Claude')await sendToClaude(t,'Kevin assigned this task to Claude from the Wire task board:\n\n'+t);
-    else if(/^Codex-|^Claude-J$/.test(to))await sendToCodex(to,t,'');
+    else if(/^Codex-/.test(to))await sendToCodex(to,t,'');
     else if(to==='Codex')await sendToInbox('For Codex: '+t,'Kevin assigned this task to **Codex** from the Wire task board. R2: hand it to the Codex task, supervise it under protocol 11 (branch only, Claude reviews, Kevin approves merges), and keep this item\'s Status current.\n\n'+t,'[kevin-msg]');
     else await sendToInbox(t,'Kevin assigned this task to R2 from the Wire task board. Mark it Taken when you start.\n\n'+t,'[kevin-msg]');
     if(fromBacklog)await editBacklog(ls=>{const k=ls.indexOf('- '+t);if(k>=0)ls.splice(k,1)},'[kevin-task] Assigned to '+to+': '+t.slice(0,50));
@@ -1209,7 +1226,7 @@ function renderDone(){if(!DATA)return;const day=prDay(Date.now()-doneDay*864e5);
   const items=(DATA.events||[]).filter(e=>prDay(e.t)===day).map(e=>{const d=doneItem(e);return d?{...d,t:e.t}:null}).filter(Boolean);
   const key=day+doneAll+JSON.stringify(items.map(i=>i.t+i.what));if(key===doneKey)return;doneKey=key;
   const cnt=document.getElementById('dcount');cnt.replaceChildren();
-  for(const w of ['R2','Codex-K','Claude-J','Codex-P','Claude','Kevin']){const n=items.filter(i=>i.who===w).length;if(!n&&/^(Codex-|Claude-J)/.test(w)&&!items.some(i=>/^(Codex|Claude-J)/.test(i.who)))continue;const d=el('span','dc '+(w.startsWith('Codex')?'Codex':w==='Claude-J'?'Claude':w));d.append(el('b',null,String(n)),document.createTextNode(w));cnt.append(d)}
+  for(const w of ['R2','Codex-K','Codex-J','Codex-P','Claude-J','Claude-F','Claude','Kevin']){const n=items.filter(i=>i.who===w).length;if(!n&&/^Codex-/.test(w)&&!items.some(i=>/^Codex/.test(i.who)))continue;const d=el('span','dc '+(w.startsWith('Codex')?'Codex':w));d.append(el('b',null,String(n)),document.createTextNode(w));cnt.append(d)}
   const ol=document.getElementById('donelist');ol.replaceChildren();
   const lim=doneAll?60:12;for(const i of items.slice(0,lim)){const li=el('li',i.who.startsWith('Codex')?'Codex':i.who);li.append(el('span','tm',fmtTime.format(new Date(i.t))),el('span','w',i.who));
     const wt=el('span','wt');if(i.link){const a=el('a',null,i.what);a.href=i.link.href;a.target='_blank';a.rel='noopener';wt.append(a)}else wt.textContent=i.what;li.append(wt);ol.append(li)}
@@ -1217,10 +1234,13 @@ function renderDone(){if(!DATA)return;const day=prDay(Date.now()-doneDay*864e5);
   document.getElementById('donenote').textContent=items.length?'Counts deliverables, reviews, Kortana commits and your check-offs; routine status lines are left out.':'Nothing finished '+(doneDay?'yesterday':'yet today')+'.'}
 document.querySelectorAll('#donep [data-day]').forEach(b=>b.addEventListener('click',()=>{doneDay=+b.dataset.day;document.querySelectorAll('#donep [data-day]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));doneKey='';renderDone()}));
 // ready-to-send drafts: STATUS "## Ready to send" lines "- **Title** — exact message text" (use " // " for line breaks)
-function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];return section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map(l=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const tg=(m[1].match(/\[(chat|codex)\]\s*$/i)||[])[1];let chat=tg?(/codex/i.test(tg)?'Codex':'R2'):null;if(chat==='Codex'){const t1=m[1];chat=/^Codex-J/i.test(t1)?'Codex-J':/Claude-J/i.test(t1)?'Claude-J':/Codex-P|Products/i.test(t1)?'Codex-P':/Codex-J/i.test(t1)?'Codex-J':/Jackie/i.test(t1)?'Claude-J':'Codex-K'}return {raw:l,chat,title:m[1].replace(/\s*\[(chat|codex)\]\s*$/i,''),text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean)}
+function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];const out=section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map((l,ix)=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const tg=(m[1].match(/\[(chat|codex|art)\]\s*$/i)||[])[1];let chat=tg?(/codex/i.test(tg)?'Codex':/art/i.test(tg)?'Art':'R2'):null;if(chat==='Codex'){const t1=m[1];chat=/Claude-F/i.test(t1)?'Claude-F':/Claude-J/i.test(t1)?'Claude-J':/Codex-P|Products/i.test(t1)?'Codex-P':/Codex-J|Jackie/i.test(t1)?'Codex-J':'Codex-K'}
+  let title=m[1].replace(/\s*\[(chat|codex|art)\]\s*$/i,'');const o=title.match(/^(\d+)\s+(NOW|NEXT|WAIT|PC)\b\s*(?:\(([^)]*)\))?\s*·\s*/i);let n=null,tier=null,when=null;if(o){n=+o[1];tier=o[2].toUpperCase();when=o[3]||null;title=title.slice(o[0].length)}
+  return {raw:l,chat,title,n,tier,when,ix,text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean);
+  return out.sort((a,b)=>(a.n==null)-(b.n==null)||(a.n??0)-(b.n??0)||a.ix-b.ix)}
 
 // ---- Alerts: tell Kevin when a Codex chat has new work ("check the hub") ----
-let seenReady=null;function readyAlerts(){if(!DATA)return;const cx=(DATA.ready||[]).filter(r=>r.chat&&(r.chat.startsWith('Codex')||r.chat==='Claude-J'));
+let seenReady=null;function readyAlerts(){if(!DATA)return;const cx=(DATA.ready||[]).filter(r=>r.chat&&(r.chat.startsWith('Codex')||/^Claude-[JF]$/.test(r.chat))&&r.tier!=='WAIT'&&r.tier!=='PC');
   const n=(DATA.ready||[]).length;try{document.title=(n?'('+n+') ':'')+'R2 ↔ Claude wire';if(navigator.setAppBadge)n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch{}
   let old;try{old=JSON.parse(localStorage.getItem('wire.seenReady')||'null')}catch{}if(seenReady===null)seenReady=new Set(old||cx.map(r=>r.raw));
   const fresh=cx.filter(r=>!seenReady.has(r.raw));for(const r of cx)seenReady.add(r.raw);try{localStorage.setItem('wire.seenReady',JSON.stringify([...seenReady].slice(-200)))}catch{}
@@ -1235,9 +1255,22 @@ function alertButton(){const note=document.getElementById('alertnote');if(!note)
 let readyKey='';
 function renderReady(){if(!DATA)return;readyAlerts();alertButton();const items=DATA.ready||[];const key=items.map(i=>i.raw).join('\n');if(key===readyKey)return;readyKey=key;
   const p=document.getElementById('readyp');p.hidden=!items.length;const box=document.getElementById('readylist');box.replaceChildren();
-  for(const it of items){const d=el('div','rd');d.append(el('div','q',it.title),el('blockquote',null,it.text));const row=el('div','row');const st=el('span','note');
-    if(it.chat){const cx=it.chat.startsWith('Codex')||it.chat==='Claude-J';const where=cx?'the '+it.chat+' chat':'R2\'s chat';
-      d.prepend(el('div','for '+(cx?(it.chat==='Claude-J'?'Claude':'Codex'):'R2'),'For '+(cx?it.chat:'R2 (ChatGPT)')));
+  const whoOf=it=>it.chat==='Art'?'Art chat':it.chat==='R2'?'R2':it.chat||'R2';
+  if(items.some(i=>i.n!=null)){const ov=el('div','order');ov.append(el('div','oh','Send in this order'));const ol=el('ol');
+    items.forEach((it,k)=>{const li=el('li',it.tier?'t-'+it.tier.toLowerCase():null);const a=el('button','olink');a.type='button';
+      a.append(el('span','num',it.n!=null?String(it.n):'·'),el('span','tier',it.tier||''),el('span','ow',whoOf(it)),el('span','ot',it.title.replace(/^(R2|Codex-[KJP]|Claude-[JF]|Art chat)\s*:\s*/i,'')));
+      a.addEventListener('click',()=>document.getElementById('rd-'+k)?.scrollIntoView({block:'start',behavior:'smooth'}));li.append(a);ol.append(li)});
+    ov.append(ol,el('p','note','NOW: send these, top to bottom. Different chats can run at the same time. NEXT: after the NOW ones. WAIT: don\'t send yet (it says what it waits for). PC: when you\'re at your PC.'));box.append(ov)}
+  items.forEach((it,k)=>it._k=k);
+  for(const it of items){const d=el('div','rd'+(it.tier==='WAIT'?' wait':''));d.id='rd-'+it._k;
+    if(it.n!=null){const b=el('div','step');b.append(el('span','num',String(it.n)),el('span','tier t-'+(it.tier||'').toLowerCase(),it.tier||''));if(it.when)b.append(el('span','when',(it.tier==='WAIT'?'Wait for: ':'')+it.when));d.append(b)}
+    d.append(el('div','q',it.title),el('blockquote',null,it.text));const row=el('div','row');const st=el('span','note');
+    if(it.chat==='Art'){d.insertBefore(el('div','for Art','For the art chat (ChatGPT images)'),d.querySelector('.q'));d.append(el('div','note','Paste this in the art chat. Save the image, then tap Done.'));
+      const cp=el('button','go','Copy for the art chat');cp.type='button';cp.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(it.text);st.textContent='Copied. Paste it in the art chat, then tap Done.'}catch{st.textContent='Select the text above and copy it.'}});
+      const dn=el('button',null,'Done, I sent it');dn.type='button';dn.addEventListener('click',async()=>{dn.disabled=true;try{await withRetry(async()=>{const f=await getFile('STATUS.md');const ls=f.text.split('\n');const k=ls.indexOf(it.raw);if(k<0)return;ls.splice(k,1);await putFile('STATUS.md',ls.join('\n'),f.sha,'[kevin-done] Sent in Art chat: '+it.title.slice(0,70))});st.textContent='Marked as sent.';setTimeout(()=>refresh(false),1500)}catch(e){dn.disabled=false;st.textContent='Could not save ('+e.message+').'}});
+      row.append(cp,dn,st);d.append(row);box.append(d);continue}
+    if(it.chat){const cx=it.chat.startsWith('Codex')||/^Claude-[JF]$/.test(it.chat);const where=cx?'the '+it.chat+' chat':'R2\'s chat';
+      d.insertBefore(el('div','for '+(cx?'Codex':'R2'),'For '+(cx?it.chat:'R2 (ChatGPT)')),d.querySelector('.q'));
       d.append(el('div','note',cx?'In the '+it.chat+' chat, type: check the hub (or paste the full text).':'Approval: paste this in R2\'s ChatGPT chat. R2 doesn\'t accept live-change approvals sent through the Wire.'));
       const copy=async(txt,msg)=>{try{await navigator.clipboard.writeText(txt);st.textContent=msg}catch{const ta=el('textarea');ta.value=txt;document.body.append(ta);ta.select();try{document.execCommand('copy');st.textContent=msg}catch{st.textContent='Select the text above and copy it.'}ta.remove()}};
       const cp=el('button','go',cx?'Copy “check the hub”':'Copy for R2\'s chat');cp.type='button';cp.addEventListener('click',()=>copy(cx?'check the hub':it.text,'Copied. Paste it in '+where+', then tap Done.'));
