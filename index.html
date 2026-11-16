@@ -494,7 +494,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261116020220';
+<script>/*build*/const WIRE_BUILD='20261116021935';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -642,7 +642,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
     <button class="chip more" id="more" hidden>Show older</button>
   </section>
 
-  <p class="foot"><a class="btn ghost" href="https://jackie-factory-world-kevin.skull.chatgpt.site" target="_blank" rel="noopener" style="padding:3px 10px;font-size:12px">Open Jackie</a> Reads <span style="font-family:var(--mono)">v7skull/kevin-r2-claude-hub</span> directly from GitHub every minute, with your token stored only in this browser. Times are when each item reached GitHub, in Puerto Rico time. <button class="btn ghost" id="pair" type="button" style="padding:3px 10px;font-size:12px">Pair a phone</button> <button class="btn ghost" id="forget" type="button" style="padding:3px 10px;font-size:12px">Remove token</button></p>
+  <p class="foot"><a class="btn ghost" href="https://jackie-factory-world-kevin.skull.chatgpt.site" target="_blank" rel="noopener" style="padding:3px 10px;font-size:12px">Open Jackie</a> Reads <span style="font-family:var(--mono)">v7skull/kevin-r2-claude-hub</span> directly from GitHub every minute, with your token stored only in this browser. Times are when each item reached GitHub, in Puerto Rico time. <span id="ver" style="font-family:var(--mono);opacity:.7"></span> <button class="btn ghost" id="pair" type="button" style="padding:3px 10px;font-size:12px">Pair a phone</button> <button class="btn ghost" id="forget" type="button" style="padding:3px 10px;font-size:12px">Remove token</button></p>
 </div>
 
 <script>
@@ -1424,5 +1424,6 @@ function badges(){const r=document.getElementById('reviewp'),rd=document.getElem
  const a=document.getElementById('bd-today'),c=document.getElementById('bd-send');a.textContent=n1;a.classList.toggle('on',n1>0);c.textContent=n2;c.classList.toggle('on',n2>0)}
 badges();setInterval(badges,3000)})();
 </script>
+<script>try{const b=WIRE_BUILD;document.getElementById('ver').textContent='Version '+b.slice(0,4)+'-'+b.slice(4,6)+'-'+b.slice(6,8)+' '+b.slice(8,10)+':'+b.slice(10,12)+' UTC ·'}catch{}</script>
 </body>
 </html>
