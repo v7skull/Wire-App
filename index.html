@@ -472,11 +472,14 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   .swipehint{display:none!important}
   /* Today: things waiting on Kevin first */
   #app>header,#newbar{order:-2}
+  #spaces{order:-2}
+  #needs{order:-1}
   #reviewp{order:-1}
+  #crew{order:2}
   #app>.waiting{order:0}
   #score{order:1}
   #working{order:2}
-  #app>[data-tab]:not(#reviewp):not(.waiting):not(#score):not(#working){order:3}
+  #app>[data-tab]:not(#reviewp):not(.waiting):not(#score):not(#working):not(#needs):not(#crew){order:3}
   /* label above the text, so text gets the full width */
   .list li{flex-direction:column;gap:4px}
   .list li .pill{align-self:flex-start}
@@ -491,10 +494,50 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   .ptabs button .bd.on{display:block}
 }
 .rd .for{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.rd .for.Codex{color:var(--codex)}.rd .for.R2{color:var(--r2)}
+
+/* ---- Spaces, crew board, needs-you inbox (Herdr-inspired, Nov 16) ---- */
+.spaces{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 14px}
+.spaces .lbl{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.spaces .chip{display:inline-flex;align-items:center;gap:6px;min-height:34px}
+.spaces .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.spaces .chip .n{font:600 11px var(--mono);min-width:18px;padding:1px 5px;border-radius:99px;background:var(--kevin);color:var(--surface);text-align:center}
+.spaces .chip[aria-pressed="true"] .n{background:var(--bg);color:var(--ink)}
+.rd.flash{outline:3px solid var(--kevin);outline-offset:2px}
+.spaces .chip .n:empty{display:none}
+.crew h2,.needs h2{margin:0 0 10px}
+.crew .hint,.needs .hint{margin:-4px 0 10px;font-size:13px;color:var(--muted)}
+.crewgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.cw{border:1px solid var(--line);border-left:4px solid var(--lc,var(--line));border-radius:10px;padding:10px 12px;display:grid;gap:5px;align-content:start;min-width:0;background:var(--surface)}
+.cw .nm{display:flex;align-items:center;gap:8px;font:600 14px var(--display);color:var(--lc,var(--ink))}
+.cw .role{font:400 12px var(--body);color:var(--muted)}
+.cw .stt{justify-self:start;font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:99px;border:1px solid currentColor}
+.cw .ln{font-size:13px;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cw .ln b{color:var(--ink);font-weight:600}
+.cw.s-needs .stt{color:var(--kevin);background:var(--kevin-soft)}
+.cw.s-review .stt{color:var(--claude);background:var(--claude-soft)}
+.cw.s-working .stt{color:var(--r2);background:var(--r2-soft)}
+.cw.s-idle .stt{color:var(--muted)}
+.cw.s-needs{box-shadow:0 0 0 1px var(--kevin) inset}
+.cw button.go{justify-self:start;font:600 12px var(--body);border:1px solid var(--kevin);background:var(--kevin);color:var(--surface);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px}
+.lane-R2{--lc:var(--r2)} .lane-Codex-P,.lane-Codex-K,.lane-Codex-J{--lc:var(--codex)} .lane-Claude,.lane-Claude-F,.lane-Claude-J{--lc:var(--claude)}
+@media (prefers-reduced-motion:no-preference){.cw.s-working .stt::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:blink 1.1s ease-in-out infinite}}
+.nlist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.nlist li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface)}
+.nlist .k{font:600 11px var(--mono);text-transform:uppercase;letter-spacing:.04em;padding:3px 7px;border-radius:6px;white-space:nowrap}
+.nlist .k.send{background:var(--kevin-soft);color:var(--kevin)} .nlist .k.do{background:var(--warn-soft);color:var(--warn)} .nlist .k.look{background:var(--claude-soft);color:var(--claude)} .nlist .k.later{color:var(--muted);border:1px solid var(--line)}
+.nlist .tx{min-width:0;overflow-wrap:anywhere;font-size:14px}
+.nlist .tx small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.nlist .open{font:600 12px var(--body);border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px;white-space:nowrap}
+.nlist li.empty{display:block;color:var(--muted);font-size:14px}
+@media (max-width:560px){.nlist li{grid-template-columns:minmax(0,1fr) auto}.nlist .k{grid-column:1/-1;justify-self:start}}
+#app[data-space="etsy"] [data-sp]:not([data-sp="etsy"]):not([data-sp="all"]),
+#app[data-space="fiverr"] [data-sp]:not([data-sp="fiverr"]):not([data-sp="all"]),
+#app[data-space="kortana"] [data-sp]:not([data-sp="kortana"]):not([data-sp="all"]),
+#app[data-space="jackie"] [data-sp]:not([data-sp="jackie"]):not([data-sp="all"]){display:none!important}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261116021935';
+<script>/*build*/const WIRE_BUILD='20261117000816';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -530,6 +573,20 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   </header>
 
   <div class="newbar" id="newbar" hidden><span id="newtxt"></span><button type="button" class="chip" id="seen">Mark all seen</button><button type="button" class="chip" id="alerts">Turn on alerts</button></div>
+
+  <nav class="spaces" id="spaces" aria-label="Business"><span class="lbl">Business</span></nav>
+
+  <section class="panel needs" id="needs" aria-labelledby="needs-h">
+    <h2 id="needs-h">Needs you</h2>
+    <p class="hint">Everything only you can do, most urgent first.</p>
+    <ul class="nlist" id="needslist"></ul>
+  </section>
+
+  <section class="panel crew" id="crew" aria-labelledby="crew-h">
+    <h2 id="crew-h">Crew</h2>
+    <p class="hint">Who is working, who is waiting on a review, and who needs you.</p>
+    <div class="crewgrid" id="crewgrid"></div>
+  </section>
 
   <section class="score" id="score" aria-label="Sales scoreboard"></section>
 
@@ -747,7 +804,7 @@ async function load() {
     }
     if (!links.length) for (const f of files) if (/^(reports|reviews|briefs|decisions)\//.test(f)) links.push({ label: f.split('/').pop().replace('.md', ''), href: BLOB + f });
     const kind = files.length === 1 && files[0] === 'STATUS.md' ? 'status' : files.some(f => f.startsWith('reviews/')) ? 'review' : files.some(f => f.startsWith('reports/')) ? 'report' : files.some(f => f.startsWith('briefs/')) ? 'brief' : files.some(f => f.startsWith('decisions/')) ? 'decision' : files.includes('INBOX-R2.md') ? 'inbox' : 'update';
-    events.push({ actor, relayed, kind, t: when, title: subj, detail, links: links.slice(0, 3) });
+    events.push({ actor, relayed, kind, t: when, title: subj, detail, links: links.slice(0, 3), files });
   }
   const cx = await loadCodex(); for (const e of cx) events.push(e);
   events.sort((a, b) => b.t.localeCompare(a.t));
@@ -842,9 +899,97 @@ function renderWorking(){
   }
 }
 setInterval(renderWorking,60000);
+
+// ---- Spaces, crew board, needs-you inbox ----
+const SPACES=[['all','All'],['etsy','Etsy'],['fiverr','Fiverr'],['kortana','Kortana'],['jackie','Jackie']];
+const LANES=[
+  ['R2','R2','Etsy, Pinterest and Printify live work','etsy'],
+  ['Codex-P','Codex-P','Builds Etsy products','etsy'],
+  ['Claude-F','Claude-F','Fiverr gigs and demos','fiverr'],
+  ['Codex-K','Codex-K','Kortana','kortana'],
+  ['Claude-J','Claude-J','Jackie','jackie'],
+  ['Claude','Claude','Reviews and plans','all']];
+let space='all';try{space=localStorage.getItem('wire.space')||'all'}catch{}
+function spaceOf(text,lane){
+  if(lane==='Claude-F')return 'fiverr';if(lane==='Claude-J'||lane==='Codex-J')return 'jackie';if(lane==='Codex-K')return 'kortana';if(lane==='Codex-P')return 'etsy';
+  const t=(text||'').toLowerCase();
+  if(/fiverr|\bgig\b|gigs|pages\.dev|demo site|paste guide|fiverr-portfolio/.test(t))return 'fiverr';
+  if(/kortana|codex-k/.test(t))return 'kortana';
+  if(/jackie|claude-j|codex-j|fortress|cloudflare access|workers\.dev/.test(t))return 'jackie';
+  if(/etsy|listing|pinterest|\bpins?\b|printify|\bads\b|cyber|product|printable|spreadsheet|planner|tracker|shop|mug|tiktok|reels|short video|erank/.test(t))return 'etsy';
+  return 'all'}
+function laneOfEvent(e){
+  if(e.actor==='Claude')return 'Claude';
+  if(e.actor==='Codex'&&e.sub)return e.sub;
+  const t=e.title||'',f=(e.files||[]).join(' ');
+  if(/^\[kevin-(done|task|msg)\]/i.test(t))return null;
+  if(/^\[status\]/i.test(t))return 'R2';
+  if(/_claude-f-|^Claude-F|\bClaude-F:/i.test(f+' '+t))return 'Claude-F';
+  if(/_claude-j-|\bClaude-J\b/i.test(f+' '+t))return 'Claude-J';
+  if(/_kortana|^Kortana\b|\bCodex-K\b/i.test(f+' '+t))return 'Codex-K';
+  if(/_codex-p-|codex-p-|short-videos/i.test(f))return 'Codex-P';
+  if(/_r2-|\bR2\b/i.test(f+' '+t))return 'R2';
+  return 'R2'}
+function sentTo(e){const m=(e.title||'').match(/^\[kevin-done\]\s*Sent in (.+?) chat:\s*(.*)$/i);return m?{lane:m[1].trim(),what:m[2].trim()}:null}
+function shortTitle(t){return (t||'').replace(/^\[(for-claude|status|for-kevin)\]\s*/i,'').replace(/^(Claude-F|Codex-[PKJ]|Claude-J|R2|Kortana)\s*[:·]\s*/i,'').slice(0,140)}
+function crewState(){
+  const ev=DATA.events||[],now=Date.now(),out={};
+  const readyBy={};for(const r of DATA.ready||[]){const c=r.chat||'R2';if(r.tier==='WAIT')continue;(readyBy[c]=readyBy[c]||[]).push(r)}
+  const lastClaude=(ev.find(e=>e.actor==='Claude')||{}).t||'';
+  for(const [id] of LANES){out[id]={id,needs:readyBy[id]||[],lastOut:null,lastSent:null,lastFor:null}}
+  for(const e of ev){const s=sentTo(e);if(s){const L=out[s.lane];if(L&&!L.lastSent)L.lastSent=e;continue}
+    const ln=laneOfEvent(e);const L=ln&&out[ln];if(!L)continue;if(!L.lastOut)L.lastOut=e;if(!L.lastFor&&ln!=='Claude'&&(/\[for-claude\]/i.test(e.title)||e.kind==='report'))L.lastFor=e}
+  let reviewCount=0;
+  for(const [id] of LANES){const L=out[id];const tOut=L.lastOut?new Date(L.lastOut.t).getTime():0;
+    if(id==='Claude'){continue}
+    if(L.needs.length){L.state='needs'}
+    else if(L.lastSent&&new Date(L.lastSent.t).getTime()>tOut){L.state='working'}
+    else if(L.lastFor&&L.lastFor.t>lastClaude){L.state='review';reviewCount++}
+    else if(tOut&&now-tOut<30*60000){L.state='working'}
+    else L.state='idle'}
+  const C=out.Claude;const tC=C.lastOut?new Date(C.lastOut.t).getTime():0;C.reviewCount=reviewCount;
+  C.state=C.needs.length?'needs':reviewCount?'working':(tC&&now-tC<30*60000?'working':'idle');
+  return out}
+function renderCrew(){if(!DATA)return;const box=document.getElementById('crewgrid');if(!box)return;box.replaceChildren();const st=crewState(),now=Date.now();
+  const LBL={needs:'Needs you',review:'Waiting on review',working:'Working',idle:'Idle'};
+  for(const [id,name,role,sp] of LANES){const L=st[id];const c=el('div','cw lane-'+id+' s-'+L.state);c.dataset.sp=sp;
+    const nm=el('div','nm',name);c.append(nm,el('div','role',role),el('span','stt',LBL[L.state]));
+    if(L.state==='needs'){const r=L.needs[0];c.append(el('div','ln',(L.needs.length>1?L.needs.length+' messages to send. First: ':'Send ')+(r.n!=null?'#'+r.n+' · ':'')+shortTitle(r.title)));
+      const b=el('button','go','Open in Send');b.type='button';b.addEventListener('click',()=>goReady(r));c.append(b)}
+    else if(L.state==='working'&&L.lastSent&&(!L.lastOut||L.lastSent.t>L.lastOut.t)){const s=sentTo(L.lastSent);c.append(el('div','ln','On: '+shortTitle(s.what)+' · sent '+ago(now-new Date(L.lastSent.t).getTime())))}
+    else if(id==='Claude'&&L.reviewCount){c.append(el('div','ln',L.reviewCount+' delivery'+(L.reviewCount>1?'ies':'')+' to review'))}
+    else if(L.state==='review'){c.append(el('div','ln','Delivered: '+shortTitle(L.lastFor.title)+' · '+ago(now-new Date(L.lastFor.t).getTime())))}
+    if(L.lastOut&&!(L.state==='review'&&L.lastFor===L.lastOut))c.append(el('div','ln','Last update '+ago(now-new Date(L.lastOut.t).getTime())+': '+shortTitle(L.lastOut.title)));
+    else if(!L.lastOut)c.append(el('div','ln','No recent hub activity.'));
+    box.append(c)}}
+function goReady(r){const k=(DATA.ready||[]).indexOf(r);try{document.querySelector('#ptabs [data-t="send"]').click()}catch{}setTimeout(()=>{const t=document.getElementById('rd-'+(r._k??k));if(t){t.scrollIntoView({block:'start',behavior:'smooth'});t.classList.add('flash');setTimeout(()=>t.classList.remove('flash'),1600)}},60)}
+function needItems(){const out=[];const rank={NOW:0,NEXT:3,PC:4,WAIT:5};
+  for(const r of DATA.ready||[]){const who=r.chat==='Art'?'the art chat':r.chat||'R2';const tier=r.tier||'NOW';
+    out.push({rank:rank[tier]??0,kind:tier==='WAIT'?'later':tier==='PC'?'later':'send',k:tier==='NOW'?'Send':tier,title:(r.n!=null?'#'+r.n+' → '+who+': ':'→ '+who+': ')+shortTitle(r.title),sub:tier==='WAIT'&&r.when?'Waits for: '+r.when:(tier==='NEXT'?'After the NOW ones':''),sp:spaceOf(r.title+' '+r.text,r.chat),act:()=>goReady(r)})}
+  for(const w of DATA.waiting||[]){out.push({rank:1,kind:'do',k:'Do',title:w.action,sub:w.detail?w.detail.slice(0,160):'',sp:spaceOf(w.action+' '+w.detail),act:()=>{try{document.querySelector('#ptabs [data-t="today"]').click()}catch{}document.getElementById('wait-h')?.scrollIntoView({block:'start',behavior:'smooth'})}})}
+  for(const v of (DATA.review||[]).filter(v=>v.opts&&v.opts.length&&!/^\[status\]/i.test(v.q||''))){out.push({rank:2,kind:'look',k:'Look',title:linkMd(v.q||'Review images')[0].slice(0,140),sub:'Pick in Images to review',sp:spaceOf((v.q||'')+' '+(v.detail||'')),act:()=>document.getElementById('rev-h')?.scrollIntoView({block:'start',behavior:'smooth'})})}
+  return out.sort((a,b)=>a.rank-b.rank)}
+function renderNeeds(){if(!DATA)return;const ul=document.getElementById('needslist');if(!ul)return;ul.replaceChildren();const items=needItems();
+  const visible=items.filter(i=>space==='all'||i.sp===space||i.sp==='all');
+  if(!visible.length){ul.append(el('li','empty',space==='all'?'Nothing needs you right now.':'Nothing in '+SPACES.find(s=>s[0]===space)[1]+' needs you right now.'))}
+  for(const i of items){const li=el('li');li.dataset.sp=i.sp;const tx=el('div','tx',i.title);if(i.sub)tx.append(el('small',null,i.sub));
+    const b=el('button','open','Open');b.type='button';b.addEventListener('click',i.act);li.append(el('span','k '+i.kind,i.k),tx,b);ul.append(li)}
+  renderSpaces(items)}
+function renderSpaces(items){const nav=document.getElementById('spaces');if(!nav)return;items=items||needItems();
+  const counts={all:items.filter(i=>i.kind!=='later').length};for(const [id] of SPACES.slice(1))counts[id]=items.filter(i=>i.kind!=='later'&&(i.sp===id||i.sp==='all')).length;
+  if(!nav.querySelector('.chip')){for(const [id,label] of SPACES){const b=el('button','chip');b.type='button';b.dataset.s=id;b.append(document.createTextNode(label),el('span','n'));
+    b.addEventListener('click',()=>{space=id;try{localStorage.setItem('wire.space',id)}catch{}applySpace();renderNeeds()});nav.append(b)}}
+  for(const b of nav.querySelectorAll('.chip')){b.setAttribute('aria-pressed',b.dataset.s===space);b.querySelector('.n').textContent=counts[b.dataset.s]||''}
+  applySpace()}
+function applySpace(){const app=document.getElementById('app');if(app)app.dataset.space=space}
+function tagSpaces(){if(!DATA)return;
+  const items=DATA.ready||[];items.forEach((it,k)=>{const sp=spaceOf(it.title+' '+it.text,it.chat);const d=document.getElementById('rd-'+(it._k??k));if(d)d.dataset.sp=sp});
+  const lis=document.querySelectorAll('#readylist .order li');lis.forEach((li,k)=>{const it=items[k];if(it)li.dataset.sp=spaceOf(it.title+' '+it.text,it.chat)});
+  const wl=document.querySelectorAll('#waiting>li');(DATA.waiting||[]).forEach((w,k)=>{if(wl[k])wl[k].dataset.sp=spaceOf(w.action+' '+w.detail)})}
+setInterval(()=>{if(DATA){renderCrew()}},60000);
 function renderTop() {if(!DATA)return;
-  renderWorking();
-  renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderTasks();renderDone();renderNew();checkAlerts();
+  renderWorking();try{renderCrew();renderNeeds()}catch(e){console.error(e)}
+  renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderTasks();renderDone();renderNew();checkAlerts();try{tagSpaces();applySpace()}catch(e){console.error(e)}
   const dl = document.getElementById('now'); dl.replaceChildren();
   for (const k of ['Task', 'Doing', 'Blocked on', 'Next']) {
     if (!DATA.now[k]) continue;
@@ -1413,8 +1558,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
 </nav>
 <script>
 (function(){const app=document.getElementById('app'),nav=document.getElementById('ptabs');if(!app||!nav)return;
-const map={score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
-for(const e of app.children){if(e.id==='wires'||e.tagName==='HEADER'||e.id==='newbar')continue;let t=map[e.id];
+const map={needs:'today',crew:'today',score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
+for(const e of app.children){if(e.id==='wires'||e.tagName==='HEADER'||e.id==='newbar'||e.id==='spaces')continue;let t=map[e.id];
  if(!t){if(e.classList.contains('waiting'))t='today';else if(e.classList.contains('msg'))t='send';else t='hub'}e.dataset.tab=t}
 let cur='today';try{cur=localStorage.getItem('wire.ptab')||'today'}catch{}
 function set(t,scroll){cur=t;app.dataset.ptab=t;for(const b of nav.children)b.setAttribute('aria-selected',b.dataset.t===t);try{localStorage.setItem('wire.ptab',t)}catch{};if(scroll)window.scrollTo(0,0)}
