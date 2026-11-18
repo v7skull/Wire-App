@@ -519,7 +519,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .cw.s-idle .stt{color:var(--muted)}
 .cw.s-needs{box-shadow:0 0 0 1px var(--kevin) inset}
 .cw button.go{justify-self:start;font:600 12px var(--body);border:1px solid var(--kevin);background:var(--kevin);color:var(--surface);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px}
-.lane-R2{--lc:var(--r2)} .lane-Codex-P,.lane-Codex-K,.lane-Codex-J{--lc:var(--codex)} .lane-Claude,.lane-Claude-F,.lane-Claude-J{--lc:var(--claude)}
+.lane-R2{--lc:var(--r2)} .lane-Codex-P,.lane-Codex-K,.lane-Codex-J{--lc:var(--codex)} .lane-Claude,.lane-Claude-F,.lane-Claude-J,.lane-Duet{--lc:var(--claude)}
 @media (prefers-reduced-motion:no-preference){.cw.s-working .stt::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:blink 1.1s ease-in-out infinite}}
 .nlist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .nlist li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface)}
@@ -537,7 +537,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261117000816';
+<script>/*build*/const WIRE_BUILD='20261118121800';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -608,6 +608,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
       <div class="lane" data-to="Codex-P"><h3><span class="av Codex">P</span>Codex-P · Products</h3><div id="ln-Codex-P"></div></div>
       <div class="lane" data-to="Claude-J"><h3><span class="av Codex">CJ</span>Claude-J · Jackie (PC)</h3><div id="ln-Claude-J"></div></div>
       <div class="lane" data-to="Claude-F"><h3><span class="av Codex">CF</span>Claude-F · Fiverr</h3><div id="ln-Claude-F"></div></div>
+      <div class="lane" data-to="Duet"><h3><span class="av Claude">D</span>Duet · always-on</h3><div id="ln-Duet"></div></div>
       <div class="lane" data-to="Claude"><h3><span class="av Claude">C</span>Claude</h3><div id="ln-Claude"></div></div>
     </div>
     <div class="tconfirm" id="tconfirm" hidden><span id="tcq"></span><button type="button" class="go" id="tcyes">Send</button><button type="button" id="tcno">Cancel</button></div>
@@ -931,7 +932,7 @@ function laneOfEvent(e){
   if(/_r2-|\bR2\b/i.test(f+' '+t))return 'R2';
   return 'R2'}
 function sentTo(e){const m=(e.title||'').match(/^\[kevin-done\]\s*Sent in (.+?) chat:\s*(.*)$/i);return m?{lane:m[1].trim(),what:m[2].trim()}:null}
-function shortTitle(t){return (t||'').replace(/^\[(for-claude|status|for-kevin)\]\s*/i,'').replace(/^(Claude-F|Codex-[PKJ]|Claude-J|R2|Kortana)\s*[:·]\s*/i,'').slice(0,140)}
+function shortTitle(t){return (t||'').replace(/^\[(for-claude|status|for-kevin)\]\s*/i,'').replace(/^(Claude-F|Codex-[PKJ]|Claude-J|R2|Kortana|Duet)\s*[:·]\s*/i,'').slice(0,140)}
 function crewState(){
   const ev=DATA.events||[],now=Date.now(),out={};
   const readyBy={};for(const r of DATA.ready||[]){const c=r.chat||'R2';if(r.tier==='WAIT')continue;(readyBy[c]=readyBy[c]||[]).push(r)}
@@ -1261,8 +1262,8 @@ const chatOf=t=>/Claude-F/i.test(t)?'Claude-F':/Claude-J/i.test(t)?'Claude-J':/C
 const agoTxt=t=>{const m=Math.round((Date.now()-new Date(t))/60000);return m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
 function codexLane(chat,box){const ev=DATA.events||[];
   const waiting=(DATA.ready||[]).filter(r=>r.chat===chat);
-  for(const r of waiting){const c=el('div','tk');const tx=el('span','tx',r.title.replace(/^(Codex-[KJP]|Claude-[JF])\s*[·:]\s*/,''));tx.append(el('span','st new','Waiting: say “check the hub” in '+chat));c.append(tx);box.append(c)}
-  const sent=ev.filter(e=>/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]|Claude-[JF]) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
+  for(const r of waiting){const c=el('div','tk');const tx=el('span','tx',r.title.replace(/^(Codex-[KJP]|Claude-[JF]|Duet)\s*[·:]\s*/,''));tx.append(el('span','st new',chat==='Duet'?'Waiting: paste it in Duet':'Waiting: say “check the hub” in '+chat));c.append(tx);box.append(c)}
+  const sent=ev.filter(e=>/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]|Duet) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]|Duet) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]|Claude-[JF]|Duet) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
   const lastWork=ev.filter(e=>(e.actor==='Codex'&&e.sub===chat)||(e.actor!=='Claude'&&!/^\[kevin-/.test(e.title)&&chatOf(e.title)===chat&&(/^\[for-claude\]/.test(e.title)||(/^\[status\]/.test(e.title)&&/\b(finished|complete|ready|PASS|FAIL|delivered)\b/i.test(e.title)&&!/\bR2\b|art\b/i.test(e.title))))).sort((a,b)=>new Date(b.t)-new Date(a.t))[0];
   sent.forEach((x,k)=>{const c=el('div','tk');const tx=el('span','tx',x.t.replace(/^(Codex-[KJP]|Kortana|Jackie|Products)\s*[·:]\s*/,''));const done=lastWork&&new Date(lastWork.t)>new Date(x.e.t);
     tx.append(el('span','st '+(k===0&&!done?'taken':''),k===0?(done?'Sent '+agoTxt(x.e.t)+' · update posted':'Sent '+agoTxt(x.e.t)+' · working on it'):'Sent '+agoTxt(x.e.t)));c.append(tx);box.append(c)});
@@ -1275,7 +1276,7 @@ function renderTasks(){if(!DATA)return;const key=JSON.stringify([DATA.backlog,DA
     const sel=el('select');sel.setAttribute('aria-label','Send task to');[['','Send to…'],['R2','R2'],['Codex-K','Codex-K · Kortana'],['Codex-J','Codex-J · Jackie'],['Codex-P','Codex-P · Products'],['Claude-J','Claude-J · Jackie (PC)'],['Claude-F','Claude-F · Fiverr'],['Claude','Claude'],['del','Remove']].forEach(([v,l])=>{const o=el('option',null,l);o.value=v;sel.append(o)});
     sel.addEventListener('change',()=>{const v=sel.value;sel.value='';if(v==='del')removeTask(t);else if(v)askAssign({t,src:'backlog'},v)});
     const pl={t,src:'backlog'};bindDrag(c,g,pl);c.append(g,el('span','tx',t),sel);bl.append(c)});
-  for(const to of ['R2','Codex-K','Codex-J','Codex-P','Claude-J','Claude-F','Claude']){const box=document.getElementById('ln-'+to);if(!box)continue;box.replaceChildren();if(to.startsWith('Codex')||/^Claude-[JF]$/.test(to)){codexLane(to,box);continue}const items=laneItems(to).slice(0,6);
+  for(const to of ['R2','Codex-K','Codex-J','Codex-P','Claude-J','Claude-F','Duet','Claude']){const box=document.getElementById('ln-'+to);if(!box)continue;box.replaceChildren();if(to.startsWith('Codex')||/^(Claude-[JF]|Duet)$/.test(to)){codexLane(to,box);continue}const items=laneItems(to).slice(0,6);
     
     if(!items.length)box.append(el('p','note',to==='Claude'?'Nothing queued.':'Inbox clear.'));
     for(const it of items){const c=el('div','tk');const clean=it.title.replace(/\s*\((Kevin via Wire|Kevin|Kevin, relayed by Claude)\)\s*$/,'').replace(/^[\d-]+ [\d:]+ · /,'').replace(/^\d{1,2}:\d{2} · /,'').replace(/\s*—\s*(New|Taken)\s*$/,'');const tx=el('span','tx',clean);const [cls,lab]=stLabel(to,it.status);tx.append(el('span','st '+cls,lab));c.append(tx);
@@ -1379,8 +1380,8 @@ function renderDone(){if(!DATA)return;const day=prDay(Date.now()-doneDay*864e5);
   document.getElementById('donenote').textContent=items.length?'Counts deliverables, reviews, Kortana commits and your check-offs; routine status lines are left out.':'Nothing finished '+(doneDay?'yesterday':'yet today')+'.'}
 document.querySelectorAll('#donep [data-day]').forEach(b=>b.addEventListener('click',()=>{doneDay=+b.dataset.day;document.querySelectorAll('#donep [data-day]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));doneKey='';renderDone()}));
 // ready-to-send drafts: STATUS "## Ready to send" lines "- **Title** — exact message text" (use " // " for line breaks)
-function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];const out=section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map((l,ix)=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const tg=(m[1].match(/\[(chat|codex|art)\]\s*$/i)||[])[1];let chat=tg?(/codex/i.test(tg)?'Codex':/art/i.test(tg)?'Art':'R2'):null;if(chat==='Codex'){const t1=m[1];chat=/Claude-F/i.test(t1)?'Claude-F':/Claude-J/i.test(t1)?'Claude-J':/Codex-P|Products/i.test(t1)?'Codex-P':/Codex-J|Jackie/i.test(t1)?'Codex-J':'Codex-K'}
-  let title=m[1].replace(/\s*\[(chat|codex|art)\]\s*$/i,'');const o=title.match(/^(\d+)\s+(NOW|NEXT|WAIT|PC)\b\s*(?:\(([^)]*)\))?\s*·\s*/i);let n=null,tier=null,when=null;if(o){n=+o[1];tier=o[2].toUpperCase();when=o[3]||null;title=title.slice(o[0].length)}
+function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];const out=section(md,'Ready to send').split('\n').filter(l=>l.startsWith('- **')).map((l,ix)=>{const m=l.slice(2).match(/^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const tg=(m[1].match(/\[(chat|codex|art|duet)\]\s*$/i)||[])[1];let chat=tg?(/codex/i.test(tg)?'Codex':/art/i.test(tg)?'Art':/duet/i.test(tg)?'Duet':'R2'):null;if(chat==='Codex'){const t1=m[1];chat=/Claude-F/i.test(t1)?'Claude-F':/Claude-J/i.test(t1)?'Claude-J':/Codex-P|Products/i.test(t1)?'Codex-P':/Codex-J|Jackie/i.test(t1)?'Codex-J':'Codex-K'}
+  let title=m[1].replace(/\s*\[(chat|codex|art|duet)\]\s*$/i,'');const o=title.match(/^(\d+)\s+(NOW|NEXT|WAIT|PC)\b\s*(?:\(([^)]*)\))?\s*·\s*/i);let n=null,tier=null,when=null;if(o){n=+o[1];tier=o[2].toUpperCase();when=o[3]||null;title=title.slice(o[0].length)}
   return {raw:l,chat,title,n,tier,when,ix,text:m[2].split(' // ').join('\n').trim()}}).filter(Boolean);
   return out.sort((a,b)=>(a.n==null)-(b.n==null)||(a.n??0)-(b.n??0)||a.ix-b.ix)}
 
@@ -1400,19 +1401,19 @@ function alertButton(){const note=document.getElementById('alertnote');if(!note)
 let readyKey='';
 function renderReady(){if(!DATA)return;readyAlerts();alertButton();const items=DATA.ready||[];const key=items.map(i=>i.raw).join('\n');if(key===readyKey)return;readyKey=key;
   const p=document.getElementById('readyp');p.hidden=!items.length;const box=document.getElementById('readylist');box.replaceChildren();
-  const whoOf=it=>it.chat==='Art'?'Art chat':it.chat==='R2'?'R2':it.chat||'R2';
+  const whoOf=it=>it.chat==='Art'?'Art chat':it.chat==='Duet'?'Duet':it.chat==='R2'?'R2':it.chat||'R2';
   if(items.some(i=>i.n!=null)){const ov=el('div','order');ov.append(el('div','oh','Send in this order'));const ol=el('ol');
     items.forEach((it,k)=>{const li=el('li',it.tier?'t-'+it.tier.toLowerCase():null);const a=el('button','olink');a.type='button';
-      a.append(el('span','num',it.n!=null?String(it.n):'·'),el('span','tier',it.tier||''),el('span','ow',whoOf(it)),el('span','ot',it.title.replace(/^(R2|Codex-[KJP]|Claude-[JF]|Art chat)\s*:\s*/i,'')));
+      a.append(el('span','num',it.n!=null?String(it.n):'·'),el('span','tier',it.tier||''),el('span','ow',whoOf(it)),el('span','ot',it.title.replace(/^(R2|Codex-[KJP]|Claude-[JF]|Art chat|Duet)\s*:\s*/i,'')));
       a.addEventListener('click',()=>document.getElementById('rd-'+k)?.scrollIntoView({block:'start',behavior:'smooth'}));li.append(a);ol.append(li)});
     ov.append(ol,el('p','note','NOW: send these, top to bottom. Different chats can run at the same time. NEXT: after the NOW ones. WAIT: don\'t send yet (it says what it waits for). PC: when you\'re at your PC.'));box.append(ov)}
   items.forEach((it,k)=>it._k=k);
   for(const it of items){const d=el('div','rd'+(it.tier==='WAIT'?' wait':''));d.id='rd-'+it._k;
     if(it.n!=null){const b=el('div','step');b.append(el('span','num',String(it.n)),el('span','tier t-'+(it.tier||'').toLowerCase(),it.tier||''));if(it.when)b.append(el('span','when',(it.tier==='WAIT'?'Wait for: ':'')+it.when));d.append(b)}
     d.append(el('div','q',it.title),el('blockquote',null,it.text));const row=el('div','row');const st=el('span','note');
-    if(it.chat==='Art'){d.insertBefore(el('div','for Art','For the art chat (ChatGPT images)'),d.querySelector('.q'));d.append(el('div','note','Paste this in the art chat. Save the image, then tap Done.'));
-      const cp=el('button','go','Copy for the art chat');cp.type='button';cp.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(it.text);st.textContent='Copied. Paste it in the art chat, then tap Done.'}catch{st.textContent='Select the text above and copy it.'}});
-      const dn=el('button',null,'Done, I sent it');dn.type='button';dn.addEventListener('click',async()=>{dn.disabled=true;try{await withRetry(async()=>{const f=await getFile('STATUS.md');const ls=f.text.split('\n');const k=ls.indexOf(it.raw);if(k<0)return;ls.splice(k,1);await putFile('STATUS.md',ls.join('\n'),f.sha,'[kevin-done] Sent in Art chat: '+it.title.slice(0,70))});st.textContent='Marked as sent.';setTimeout(()=>refresh(false),1500)}catch(e){dn.disabled=false;st.textContent='Could not save ('+e.message+').'}});
+    if(it.chat==='Art'||it.chat==='Duet'){const isD=it.chat==='Duet';const nm=isD?'Duet':'the art chat';d.insertBefore(el('div','for '+(isD?'Claude':'Art'),isD?'For Claude Duet (always-on agent)':'For the art chat (ChatGPT images)'),d.querySelector('.q'));d.append(el('div','note',isD?'Paste this in Claude Duet, then tap Done.':'Paste this in the art chat. Save the image, then tap Done.'));
+      const cp=el('button','go',isD?'Copy for Duet':'Copy for the art chat');cp.type='button';cp.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(it.text);st.textContent='Copied. Paste it in '+nm+', then tap Done.'}catch{st.textContent='Select the text above and copy it.'}});
+      const dn=el('button',null,'Done, I sent it');dn.type='button';dn.addEventListener('click',async()=>{dn.disabled=true;try{await withRetry(async()=>{const f=await getFile('STATUS.md');const ls=f.text.split('\n');const k=ls.indexOf(it.raw);if(k<0)return;ls.splice(k,1);await putFile('STATUS.md',ls.join('\n'),f.sha,'[kevin-done] Sent in '+(isD?'Duet':'Art')+' chat: '+it.title.slice(0,70))});st.textContent='Marked as sent.';setTimeout(()=>refresh(false),1500)}catch(e){dn.disabled=false;st.textContent='Could not save ('+e.message+').'}});
       row.append(cp,dn,st);d.append(row);box.append(d);continue}
     if(it.chat){const cx=it.chat.startsWith('Codex')||/^Claude-[JF]$/.test(it.chat);const where=cx?'the '+it.chat+' chat':'R2\'s chat';
       d.insertBefore(el('div','for '+(cx?'Codex':'R2'),'For '+(cx?it.chat:'R2 (ChatGPT)')),d.querySelector('.q'));
