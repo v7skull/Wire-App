@@ -537,7 +537,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261118122655';
+<script>/*build*/const WIRE_BUILD='20261118152930';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -932,7 +932,7 @@ function laneOfEvent(e){
   if(/_codex-p-|codex-p-|short-videos/i.test(f))return 'Codex-P';
   if(/_r2-|\bR2\b/i.test(f+' '+t))return 'R2';
   return 'R2'}
-function sentTo(e){const m=(e.title||'').match(/^\[kevin-done\]\s*Sent in (.+?) chat:\s*(.*)$/i);return m?{lane:m[1].trim(),what:m[2].trim()}:null}
+function sentTo(e){const m=(e.title||'').match(/^\[(?:kevin-done|agent-took)\]\s*Sent in (.+?) chat:\s*(.*)$/i);return m?{lane:m[1].trim(),what:m[2].trim()}:null}
 function shortTitle(t){return (t||'').replace(/^\[(for-claude|status|for-kevin)\]\s*/i,'').replace(/^(Claude-F|Codex-[PKJ]|Claude-J|R2|Kortana|Duet)\s*[:·]\s*/i,'').slice(0,140)}
 function crewState(){
   const ev=DATA.events||[],now=Date.now(),out={};
@@ -1264,7 +1264,7 @@ const agoTxt=t=>{const m=Math.round((Date.now()-new Date(t))/60000);return m<60?
 function codexLane(chat,box){const ev=DATA.events||[];
   const waiting=(DATA.ready||[]).filter(r=>r.chat===chat);
   for(const r of waiting){const c=el('div','tk');const tx=el('span','tx',r.title.replace(/^(Codex-[KJP]|Claude-[JF]|Duet)\s*[·:]\s*/,''));tx.append(el('span','st new',chat==='Duet'?'Waiting: paste it in Duet':'Waiting: say “check the hub” in '+chat));c.append(tx);box.append(c)}
-  const sent=ev.filter(e=>/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]|Duet) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[kevin-done\] Sent in (Codex|Codex-[KJP]|Claude-[JF]|Duet) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]|Claude-[JF]|Duet) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
+  const sent=ev.filter(e=>/^\[(?:kevin-done|agent-took)\] Sent in (Codex|Codex-[KJP]|Claude-[JF]|Duet) chat:/.test(e.title)&&!/\blog:/.test(e.title)).map(e=>({e,t:e.title.replace(/^\[(?:kevin-done|agent-took)\] Sent in (Codex|Codex-[KJP]|Claude-[JF]|Duet) chat:\s*/,''),who:(e.title.match(/Sent in (Codex-[KJP]|Claude-[JF]|Duet) chat/)||[])[1]||chatOf(e.title)})).filter(x=>x.who===chat).slice(0,3);
   const lastWork=ev.filter(e=>(e.actor==='Codex'&&e.sub===chat)||(e.actor!=='Claude'&&!/^\[kevin-/.test(e.title)&&chatOf(e.title)===chat&&(/^\[for-claude\]/.test(e.title)||(/^\[status\]/.test(e.title)&&/\b(finished|complete|ready|PASS|FAIL|delivered)\b/i.test(e.title)&&!/\bR2\b|art\b/i.test(e.title))))).sort((a,b)=>new Date(b.t)-new Date(a.t))[0];
   sent.forEach((x,k)=>{const c=el('div','tk');const tx=el('span','tx',x.t.replace(/^(Codex-[KJP]|Kortana|Jackie|Products)\s*[·:]\s*/,''));const done=lastWork&&new Date(lastWork.t)>new Date(x.e.t);
     tx.append(el('span','st '+(k===0&&!done?'taken':''),k===0?(done?'Sent '+agoTxt(x.e.t)+' · update posted':'Sent '+agoTxt(x.e.t)+' · working on it'):'Sent '+agoTxt(x.e.t)));c.append(tx);box.append(c)});
@@ -1361,6 +1361,7 @@ const prDay=d=>new Date(new Date(d).getTime()-4*3600e3).toISOString().slice(0,10
 function doneItem(e){const t=e.title||'';
   if(/^Merge|resolve:|\blog:|^\[kevin-msg\]|^\[kevin-task\]|reconcil/i.test(t))return null;
   if(e.actor==='Codex')return {who:e.sub||'Codex-K',what:t.replace(/^\[for-claude\]\s*/,'').replace(/^(feat|fix|docs|design|chore):\s*/i,''),link:e.links&&e.links[0]};
+  if(/^\[agent-took\]/.test(t)){const m=t.match(/Sent in (.+?) chat:\s*(.*)$/);return {who:m?m[1]:'Agent',what:'Took it from the hub: '+(m?m[2]:t),link:null}}
   if(/^\[kevin-done\]/.test(t))return {who:'Kevin',what:t.replace(/^\[kevin-done\]\s*/,'').replace(/^Sent in R2 chat:\s*/,'Sent to R2: '),link:null};
   if(/^\[kevin-pick\]/.test(t))return {who:'Kevin',what:t.replace(/^\[kevin-pick\]\s*/,''),link:null};
   if(e.actor==='Claude'){if(e.kind==='review'||/review|\bpass\b/i.test(t))return {who:'Claude',what:t.replace(/^\[for-\w+\]\s*/,''),link:e.links&&e.links[0]};
