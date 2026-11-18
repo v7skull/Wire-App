@@ -518,6 +518,13 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .cw.s-working .stt{color:var(--r2);background:var(--r2-soft)}
 .cw.s-idle .stt{color:var(--muted)}
 .cw.s-needs{box-shadow:0 0 0 1px var(--kevin) inset}
+.cw.s-queued .stt{color:var(--r2);background:var(--r2-soft)}
+.cw.s-nudge .stt,.cw.s-stuck .stt{color:var(--warn);background:var(--warn-soft)}
+.cw.s-nudge,.cw.s-stuck{box-shadow:0 0 0 1px var(--warn) inset}
+.cw .go.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.nlist .k.ok{background:var(--kevin);color:var(--bg,#fff)}
+.nlist .btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.nlist .say{font:600 12px var(--mono);color:var(--ink)}
 .cw button.go{justify-self:start;font:600 12px var(--body);border:1px solid var(--kevin);background:var(--kevin);color:var(--surface);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px}
 .lane-R2{--lc:var(--r2)} .lane-Codex-P,.lane-Codex-K,.lane-Codex-J{--lc:var(--codex)} .lane-Claude,.lane-Claude-F,.lane-Claude-J,.lane-Duet{--lc:var(--claude)}
 @media (prefers-reduced-motion:no-preference){.cw.s-working .stt::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:blink 1.1s ease-in-out infinite}}
@@ -537,7 +544,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261118152930';
+<script>/*build*/const WIRE_BUILD='20261118160452';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -567,7 +574,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   <header>
     <div>
       <h1><span class="a">Reactor</span> <span class="b">Core</span></h1>
-      <p class="sub">Everything R2 and Claude post to the shared hub, with your decisions in the middle. R2 builds on the left, Claude reviews on the right.</p>
+      <p class="sub">Your control tower: what needs your OK, and what every agent is doing on autopilot.</p>
     </div>
     <div class="stamp" id="stamp"></div>
   </header>
@@ -578,13 +585,13 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 
   <section class="panel needs" id="needs" aria-labelledby="needs-h">
     <h2 id="needs-h">Needs you</h2>
-    <p class="hint">Everything only you can do, most urgent first.</p>
+    <p class="hint">Only what needs you: approvals first (copy the exact words, paste them in that chat, tap Done), then anything manual. Agents take their own hub lines.</p>
     <ul class="nlist" id="needslist"></ul>
   </section>
 
   <section class="panel crew" id="crew" aria-labelledby="crew-h">
     <h2 id="crew-h">Crew</h2>
-    <p class="hint">Who is working, who is waiting on a review, and who needs you.</p>
+    <p class="hint">Each agent's status. Yellow means it's idle with work waiting or hasn't reported in 3 hours: copy “check the hub” into its chat.</p>
     <div class="crewgrid" id="crewgrid"></div>
   </section>
 
@@ -785,7 +792,7 @@ async function loadCodex(){const out=[],seen=new Set();let denied=0;
 async function load() {
   const commits = await gh('/commits?sha=main&per_page=100');
   const head = commits[0] && commits[0].sha;
-  const [statusMd, inboxMd, tasksMd, cinboxMd] = await Promise.all([gh('/contents/STATUS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-R2.md?ref=main', true).catch(() => ''), gh('/contents/TASKS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-CLAUDE.md?ref=main', true).catch(() => '')]);
+  const [statusMd, inboxMd, tasksMd, cinboxMd, needsMd] = await Promise.all([gh('/contents/STATUS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-R2.md?ref=main', true).catch(() => ''), gh('/contents/TASKS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-CLAUDE.md?ref=main', true).catch(() => ''), gh('/contents/NEEDS-KEVIN.md?ref=main', true).catch(() => '')]);
   const events = [];
   for (const c of commits) {
     const subj = c.commit.message.split('\n')[0];
@@ -827,7 +834,7 @@ async function load() {
     });
   };
   const sig = head + '|' + (cx[0] ? cx.map(e => e.t).sort().pop() : ''); const changed = sig !== lastHead; lastHead = sig;
-  DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd), backlog, cinbox, tasksExist: !!tasksMd };
+  DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd), approvals: parseApprovals(needsMd), backlog, cinbox, tasksExist: !!tasksMd };
   return changed;
 }
 
@@ -944,7 +951,11 @@ function crewState(){
   let reviewCount=0;
   for(const [id] of LANES){const L=out[id];const tOut=L.lastOut?new Date(L.lastOut.t).getTime():0;
     if(id==='Claude'){continue}
-    if(L.needs.length){L.state='needs'}
+    const tSent=L.lastSent?new Date(L.lastSent.t).getTime():0,tAct=Math.max(tSent,tOut);
+    if(L.needs.length&&MANUAL_LANES.has(id)){L.state='needs'}
+    else if(tSent>tOut&&now-tSent>3*3600000){L.state='stuck'}
+    else if(L.needs.length&&tSent>tOut){L.state='working'}
+    else if(L.needs.length){L.state=(!tAct||now-tAct>45*60000)?'nudge':'queued'}
     else if(L.lastSent&&new Date(L.lastSent.t).getTime()>tOut){L.state='working'}
     else if(L.lastFor&&L.lastFor.t>lastClaude){L.state='review';reviewCount++}
     else if(tOut&&now-tOut<30*60000){L.state='working'}
@@ -953,11 +964,14 @@ function crewState(){
   C.state=C.needs.length?'needs':reviewCount?'working':(tC&&now-tC<30*60000?'working':'idle');
   return out}
 function renderCrew(){if(!DATA)return;const box=document.getElementById('crewgrid');if(!box)return;box.replaceChildren();const st=crewState(),now=Date.now();
-  const LBL={needs:'Needs you',review:'Waiting on review',working:'Working',idle:'Idle'};
+  const LBL={needs:'Needs you',review:'Waiting on review',working:'Working',idle:'Idle',queued:'Work queued',nudge:'Idle · work waiting',stuck:'No report 3h+'};
+  const nudgeBtn=(c,label)=>{const b=el('button','go ghost',label);b.type='button';const st=el('div','ln');b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('check the hub');st.textContent='Copied “check the hub”. Paste it in this chat.'}catch{st.textContent='Type “check the hub” in this chat.'}});c.append(b,st)};
   for(const [id,name,role,sp] of LANES){const L=st[id];const c=el('div','cw lane-'+id+' s-'+L.state);c.dataset.sp=sp;
     const nm=el('div','nm',name);c.append(nm,el('div','role',role),el('span','stt',LBL[L.state]));
     if(L.state==='needs'){const r=L.needs[0];c.append(el('div','ln',(L.needs.length>1?L.needs.length+' messages to send. First: ':'Send ')+(r.n!=null?'#'+r.n+' · ':'')+shortTitle(r.title)));
       const b=el('button','go','Open in Send');b.type='button';b.addEventListener('click',()=>goReady(r));c.append(b)}
+    else if(L.state==='queued'||L.state==='nudge'){const r=L.needs[0];c.append(el('div','ln',(L.needs.length>1?L.needs.length+' lines queued. Next: ':'Next: ')+(r.n!=null?'#'+r.n+' · ':'')+shortTitle(r.title)));if(L.state==='nudge')nudgeBtn(c,'Copy “check the hub”')}
+    else if(L.state==='stuck'){const s=sentTo(L.lastSent);c.append(el('div','ln','Took “'+shortTitle(s.what)+'” '+ago(now-new Date(L.lastSent.t).getTime())+', no report yet.'));nudgeBtn(c,'Copy “check the hub”')}
     else if(L.state==='working'&&L.lastSent&&(!L.lastOut||L.lastSent.t>L.lastOut.t)){const s=sentTo(L.lastSent);c.append(el('div','ln','On: '+shortTitle(s.what)+' · sent '+ago(now-new Date(L.lastSent.t).getTime())))}
     else if(id==='Claude'&&L.reviewCount){c.append(el('div','ln',L.reviewCount+' delivery'+(L.reviewCount>1?'ies':'')+' to review'))}
     else if(L.state==='review'){c.append(el('div','ln','Delivered: '+shortTitle(L.lastFor.title)+' · '+ago(now-new Date(L.lastFor.t).getTime())))}
@@ -965,8 +979,13 @@ function renderCrew(){if(!DATA)return;const box=document.getElementById('crewgri
     else if(!L.lastOut)c.append(el('div','ln','No recent hub activity.'));
     box.append(c)}}
 function goReady(r){const k=(DATA.ready||[]).indexOf(r);try{document.querySelector('#ptabs [data-t="send"]').click()}catch{}setTimeout(()=>{const t=document.getElementById('rd-'+(r._k??k));if(t){t.scrollIntoView({block:'start',behavior:'smooth'});t.classList.add('flash');setTimeout(()=>t.classList.remove('flash'),1600)}},60)}
+// NEEDS-KEVIN.md lines: "- [ ] **Agent** — what Kevin must OK // say: exact words"
+function parseApprovals(md){return (md||'').split('\n').filter(l=>/^- \[ \] \*\*/.test(l)).map(l=>{const m=l.match(/^- \[ \] \*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const parts=m[2].split(/\s*\/\/\s*say:\s*/i);return {raw:l,who:m[1].trim(),what:parts[0].trim(),say:(parts[1]||'').replace(/^["“]|["”]$/g,'').trim()}}).filter(Boolean)}
+async function approveDone(a){await withRetry(async()=>{const f=await getFile('NEEDS-KEVIN.md');const ls=f.text.split('\n');const k=ls.indexOf(a.raw);if(k<0)return;ls.splice(k,1);await putFile('NEEDS-KEVIN.md',ls.join('\n'),f.sha,'[kevin-done] approved: '+a.who+': '+a.what.slice(0,120))})}
+const MANUAL_LANES=new Set(['Art','Duet']);
 function needItems(){const out=[];const rank={NOW:0,NEXT:3,PC:4,WAIT:5};
-  for(const r of DATA.ready||[]){const who=r.chat==='Art'?'the art chat':r.chat==='Duet'?'Duet':r.chat||'R2';const tier=r.tier||'NOW';
+  for(const a of DATA.approvals||[]){out.push({rank:-1,kind:'ok',k:'Your OK',title:a.who+': '+a.what,sub:a.say?'Say in '+a.who+(a.who==='R2'?'\'s':'')+' chat:':'Open '+a.who+'\'s chat',say:a.say,sp:spaceOf(a.what,a.who),appr:a})}
+  for(const r of DATA.ready||[]){if(!MANUAL_LANES.has(r.chat||''))continue;const who=r.chat==='Art'?'the art chat':r.chat==='Duet'?'Duet':r.chat||'R2';const tier=r.tier||'NOW';
     out.push({rank:rank[tier]??0,kind:tier==='WAIT'?'later':tier==='PC'?'later':'send',k:tier==='NOW'?'Send':tier,title:(r.n!=null?'#'+r.n+' → '+who+': ':'→ '+who+': ')+shortTitle(r.title),sub:tier==='WAIT'&&r.when?'Waits for: '+r.when:(tier==='NEXT'?'After the NOW ones':''),sp:spaceOf(r.title+' '+r.text,r.chat),act:()=>goReady(r)})}
   for(const w of DATA.waiting||[]){out.push({rank:1,kind:'do',k:'Do',title:w.action,sub:w.detail?w.detail.slice(0,160):'',sp:spaceOf(w.action+' '+w.detail),act:()=>{try{document.querySelector('#ptabs [data-t="today"]').click()}catch{}document.getElementById('wait-h')?.scrollIntoView({block:'start',behavior:'smooth'})}})}
   for(const v of (DATA.review||[]).filter(v=>v.opts&&v.opts.length&&!/^\[status\]/i.test(v.q||''))){out.push({rank:2,kind:'look',k:'Look',title:linkMd(v.q||'Review images')[0].slice(0,140),sub:'Pick in Images to review',sp:spaceOf((v.q||'')+' '+(v.detail||'')),act:()=>document.getElementById('rev-h')?.scrollIntoView({block:'start',behavior:'smooth'})})}
@@ -975,6 +994,9 @@ function renderNeeds(){if(!DATA)return;const ul=document.getElementById('needsli
   const visible=items.filter(i=>space==='all'||i.sp===space||i.sp==='all');
   if(!visible.length){ul.append(el('li','empty',space==='all'?'Nothing needs you right now.':'Nothing in '+SPACES.find(s=>s[0]===space)[1]+' needs you right now.'))}
   for(const i of items){const li=el('li');li.dataset.sp=i.sp;const tx=el('div','tx',i.title);if(i.sub)tx.append(el('small',null,i.sub));
+    if(i.appr){if(i.say)tx.append(el('span','say','“'+i.say+'”'));const bx=el('div','btns');const st=el('small','note');
+      if(i.say){const cp=el('button','open','Copy words');cp.type='button';cp.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(i.say);st.textContent='Copied. Paste it in '+i.appr.who+'\'s chat.'}catch{st.textContent='Select the words above and copy them.'}});bx.append(cp)}
+      const dn=el('button','open','Done');dn.type='button';dn.addEventListener('click',async()=>{dn.disabled=true;try{await approveDone(i.appr);li.remove();setTimeout(()=>refresh(false),1200)}catch(e){dn.disabled=false;st.textContent='Could not save ('+e.message+').'}});bx.append(dn);tx.append(st);li.append(el('span','k ok',i.k),tx,bx);ul.append(li);continue}
     const b=el('button','open','Open');b.type='button';b.addEventListener('click',i.act);li.append(el('span','k '+i.kind,i.k),tx,b);ul.append(li)}
   renderSpaces(items)}
 function renderSpaces(items){const nav=document.getElementById('spaces');if(!nav)return;items=items||needItems();
@@ -1388,14 +1410,14 @@ function parseReady(md){if(!/^## Ready to send\s*$/m.test(md))return [];const ou
   return out.sort((a,b)=>(a.n==null)-(b.n==null)||(a.n??0)-(b.n??0)||a.ix-b.ix)}
 
 // ---- Alerts: tell Kevin when a Codex chat has new work ("check the hub") ----
-let seenReady=null;function readyAlerts(){if(!DATA)return;const cx=(DATA.ready||[]).filter(r=>r.chat&&(r.chat.startsWith('Codex')||/^Claude-[JF]$/.test(r.chat))&&r.tier!=='WAIT'&&r.tier!=='PC');
-  const n=(DATA.ready||[]).length;try{document.title=(n?'('+n+') ':'')+'Reactor Core';if(navigator.setAppBadge)n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch{}
+let seenReady=null;function readyAlerts(){if(!DATA)return;const cx=(DATA.approvals||[]).map(a=>({raw:a.raw,chat:a.who+': '+a.what.slice(0,60)}));
+  const n=(DATA.approvals||[]).length+(DATA.ready||[]).filter(r=>MANUAL_LANES.has(r.chat||'')).length;try{document.title=(n?'('+n+') ':'')+'Reactor Core';if(navigator.setAppBadge)n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch{}
   let old;try{old=JSON.parse(localStorage.getItem('wire.seenReady')||'null')}catch{}if(seenReady===null)seenReady=new Set(old||cx.map(r=>r.raw));
   const fresh=cx.filter(r=>!seenReady.has(r.raw));for(const r of cx)seenReady.add(r.raw);try{localStorage.setItem('wire.seenReady',JSON.stringify([...seenReady].slice(-200)))}catch{}
   const chats=[...new Set(fresh.map(r=>r.chat))];if(!chats.length)return;
-  const body=chats.map(c=>c+': say “check the hub”').join(' · ');
+  const body=chats.join(' · ');
   try{if('Notification' in window&&Notification.permission==='granted'){const opt={body,tag:'wire-codex',renotify:true,icon:'icon-192.png'};
-    navigator.serviceWorker&&navigator.serviceWorker.getRegistration?navigator.serviceWorker.getRegistration().then(reg=>reg?reg.showNotification('New Codex work',opt):new Notification('New Codex work',opt)).catch(()=>{}):new Notification('New Codex work',opt)}}catch{}}
+    navigator.serviceWorker&&navigator.serviceWorker.getRegistration?navigator.serviceWorker.getRegistration().then(reg=>reg?reg.showNotification('Needs your OK',opt):new Notification('Needs your OK',opt)).catch(()=>{}):new Notification('Needs your OK',opt)}}catch{}}
 function alertButton(){const note=document.getElementById('alertnote');if(!note)return;note.replaceChildren();
   if(!('Notification' in window)){note.textContent='This browser can\'t show alerts. Watch the Send tab count.';return}
   if(Notification.permission==='granted'){note.textContent='Alerts are on while the Wire is open or running in the background.';return}
