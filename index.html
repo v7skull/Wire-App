@@ -537,7 +537,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261118121800';
+<script>/*build*/const WIRE_BUILD='20261118122655';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -909,6 +909,7 @@ const LANES=[
   ['Claude-F','Claude-F','Fiverr gigs and demos','fiverr'],
   ['Codex-K','Codex-K','Kortana','kortana'],
   ['Claude-J','Claude-J','Jackie','jackie'],
+  ['Duet','Duet','Always-on: briefs and alerts','all'],
   ['Claude','Claude','Reviews and plans','all']];
 let space='all';try{space=localStorage.getItem('wire.space')||'all'}catch{}
 function spaceOf(text,lane){
@@ -965,7 +966,7 @@ function renderCrew(){if(!DATA)return;const box=document.getElementById('crewgri
     box.append(c)}}
 function goReady(r){const k=(DATA.ready||[]).indexOf(r);try{document.querySelector('#ptabs [data-t="send"]').click()}catch{}setTimeout(()=>{const t=document.getElementById('rd-'+(r._k??k));if(t){t.scrollIntoView({block:'start',behavior:'smooth'});t.classList.add('flash');setTimeout(()=>t.classList.remove('flash'),1600)}},60)}
 function needItems(){const out=[];const rank={NOW:0,NEXT:3,PC:4,WAIT:5};
-  for(const r of DATA.ready||[]){const who=r.chat==='Art'?'the art chat':r.chat||'R2';const tier=r.tier||'NOW';
+  for(const r of DATA.ready||[]){const who=r.chat==='Art'?'the art chat':r.chat==='Duet'?'Duet':r.chat||'R2';const tier=r.tier||'NOW';
     out.push({rank:rank[tier]??0,kind:tier==='WAIT'?'later':tier==='PC'?'later':'send',k:tier==='NOW'?'Send':tier,title:(r.n!=null?'#'+r.n+' → '+who+': ':'→ '+who+': ')+shortTitle(r.title),sub:tier==='WAIT'&&r.when?'Waits for: '+r.when:(tier==='NEXT'?'After the NOW ones':''),sp:spaceOf(r.title+' '+r.text,r.chat),act:()=>goReady(r)})}
   for(const w of DATA.waiting||[]){out.push({rank:1,kind:'do',k:'Do',title:w.action,sub:w.detail?w.detail.slice(0,160):'',sp:spaceOf(w.action+' '+w.detail),act:()=>{try{document.querySelector('#ptabs [data-t="today"]').click()}catch{}document.getElementById('wait-h')?.scrollIntoView({block:'start',behavior:'smooth'})}})}
   for(const v of (DATA.review||[]).filter(v=>v.opts&&v.opts.length&&!/^\[status\]/i.test(v.q||''))){out.push({rank:2,kind:'look',k:'Look',title:linkMd(v.q||'Review images')[0].slice(0,140),sub:'Pick in Images to review',sp:spaceOf((v.q||'')+' '+(v.detail||'')),act:()=>document.getElementById('rev-h')?.scrollIntoView({block:'start',behavior:'smooth'})})}
