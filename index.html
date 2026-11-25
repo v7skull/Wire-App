@@ -465,7 +465,8 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
   #app[data-ptab=today]>[data-tab]:not([data-tab=today]),
   #app[data-ptab=tasks]>[data-tab]:not([data-tab=tasks]),
   #app[data-ptab=send]>[data-tab]:not([data-tab=send]),
-  #app[data-ptab=hub]>[data-tab]:not([data-tab=hub]){display:none!important}
+  #app[data-ptab=hub]>[data-tab]:not([data-tab=hub]),
+  #app[data-ptab=test]>[data-tab]:not([data-tab=test]){display:none!important}
   /* task lanes: stacked full width, no sideways swipe */
   .board,.kcol .board{display:grid!important;grid-template-columns:minmax(0,1fr)!important;overflow:visible!important;margin:0!important;padding:0!important;gap:10px!important}
   .board>.lane{flex:none!important;max-height:none!important;overflow:visible!important;width:auto!important}
@@ -525,6 +526,12 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 .nlist .k.ok{background:var(--kevin);color:var(--bg,#fff)}
 .nlist .btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .nlist .say{font:600 12px var(--mono);color:var(--ink)}
+.nlist .k.test{background:var(--claude-soft,var(--r2-soft));color:var(--claude,var(--ink))}
+.tsteps{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.45}
+.tsteps li{display:list-item!important;border:0!important;padding:1px 0!important;grid-template-columns:none!important}
+.tfail{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tfail input{flex:1;min-width:0;font:13px var(--body);padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.tdone{font-size:13px;color:var(--muted)}
 .cw button.go{justify-self:start;font:600 12px var(--body);border:1px solid var(--kevin);background:var(--kevin);color:var(--surface);border-radius:8px;padding:5px 10px;cursor:pointer;min-height:32px}
 .lane-R2{--lc:var(--r2)} .lane-Codex-P,.lane-Codex-K,.lane-Codex-J{--lc:var(--codex)} .lane-Claude,.lane-Claude-F,.lane-Claude-J,.lane-Duet{--lc:var(--claude)}
 @media (prefers-reduced-motion:no-preference){.cw.s-working .stt::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:blink 1.1s ease-in-out infinite}}
@@ -544,7 +551,7 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261118160452';
+<script>/*build*/const WIRE_BUILD='20261125133841';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -587,6 +594,13 @@ h2{font:600 11px var(--mono)!important;letter-spacing:.14em!important;text-trans
     <h2 id="needs-h">Needs you</h2>
     <p class="hint">Only what needs you: approvals first (copy the exact words, paste them in that chat, tap Done), then anything manual. Agents take their own hub lines.</p>
     <ul class="nlist" id="needslist"></ul>
+  </section>
+
+  <section class="panel needs" id="testp" aria-labelledby="test-h">
+    <h2 id="test-h">Test</h2>
+    <p class="hint">Things only you can test (tablet, print, form, real device). Open the file, follow the steps, then tap Passed or Failed. Failed asks what went wrong. Agents read your result in the hub.</p>
+    <ul class="nlist" id="testlist"></ul>
+    <div class="tdone" id="testdone"></div>
   </section>
 
   <section class="panel crew" id="crew" aria-labelledby="crew-h">
@@ -792,7 +806,7 @@ async function loadCodex(){const out=[],seen=new Set();let denied=0;
 async function load() {
   const commits = await gh('/commits?sha=main&per_page=100');
   const head = commits[0] && commits[0].sha;
-  const [statusMd, inboxMd, tasksMd, cinboxMd, needsMd] = await Promise.all([gh('/contents/STATUS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-R2.md?ref=main', true).catch(() => ''), gh('/contents/TASKS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-CLAUDE.md?ref=main', true).catch(() => ''), gh('/contents/NEEDS-KEVIN.md?ref=main', true).catch(() => '')]);
+  const [statusMd, inboxMd, tasksMd, cinboxMd, needsMd, testMd] = await Promise.all([gh('/contents/STATUS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-R2.md?ref=main', true).catch(() => ''), gh('/contents/TASKS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-CLAUDE.md?ref=main', true).catch(() => ''), gh('/contents/NEEDS-KEVIN.md?ref=main', true).catch(() => ''), gh('/contents/TESTING.md?ref=main', true).catch(() => '')]);
   const events = [];
   for (const c of commits) {
     const subj = c.commit.message.split('\n')[0];
@@ -834,7 +848,7 @@ async function load() {
     });
   };
   const sig = head + '|' + (cx[0] ? cx.map(e => e.t).sort().pop() : ''); const changed = sig !== lastHead; lastHead = sig;
-  DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd), approvals: parseApprovals(needsMd), backlog, cinbox, tasksExist: !!tasksMd };
+  DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd), approvals: parseApprovals(needsMd), tests: parseTests(testMd), backlog, cinbox, tasksExist: !!tasksMd };
   return changed;
 }
 
@@ -982,6 +996,33 @@ function goReady(r){const k=(DATA.ready||[]).indexOf(r);try{document.querySelect
 // NEEDS-KEVIN.md lines: "- [ ] **Agent** — what Kevin must OK // say: exact words"
 function parseApprovals(md){return (md||'').split('\n').filter(l=>/^- \[ \] \*\*/.test(l)).map(l=>{const m=l.match(/^- \[ \] \*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const parts=m[2].split(/\s*\/\/\s*say:\s*/i);return {raw:l,who:m[1].trim(),what:parts[0].trim(),say:(parts[1]||'').replace(/^["“]|["”]$/g,'').trim()}}).filter(Boolean)}
 async function approveDone(a){await withRetry(async()=>{const f=await getFile('NEEDS-KEVIN.md');const ls=f.text.split('\n');const k=ls.indexOf(a.raw);if(k<0)return;ls.splice(k,1);await putFile('NEEDS-KEVIN.md',ls.join('\n'),f.sha,'[kevin-done] approved: '+a.who+': '+a.what.slice(0,120))})}
+// TESTING.md lines: "- [ ] **Item** — goal // steps: step 1; step 2 // file: hub/path or https link // tell: Agent"
+// Results: Passed/Failed move the line to "## Results" as "- [x] PASS|FAIL YYYY-MM-DD **Item** — note" (commit [kevin-test]).
+function parseTests(md){const open=(md||'').split(/^## Results\s*$/m)[0];const res=((md||'').split(/^## Results\s*$/m)[1]||'').split('\n').filter(l=>/^- \[x\] /.test(l)).slice(0,5);
+  const items=open.split('\n').filter(l=>/^- \[ \] \*\*/.test(l)).map(l=>{const m=l.match(/^- \[ \] \*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const parts=m[2].split(/\s*\/\/\s*/);const o={raw:l,what:m[1].trim(),goal:parts[0].trim(),steps:[],files:[],tell:''};
+    for(const p of parts.slice(1)){const k=p.match(/^(steps|file|tell):\s*(.*)$/i);if(!k)continue;const key=k[1].toLowerCase();if(key==='steps')o.steps=k[2].split(/\s*;\s*/).filter(Boolean);else if(key==='file')o.files=k[2].split(/\s*,\s*/).filter(Boolean);else o.tell=k[2].trim()}return o}).filter(Boolean);
+  return {items,recent:res.map(l=>l.replace(/^- \[x\]\s*/,'').replace(/\*\*/g,''))}}
+async function testResult(t,pass,note){const day=new Date().toISOString().slice(0,10);await withRetry(async()=>{const f=await getFile('TESTING.md');let ls=f.text.split('\n');const k=ls.indexOf(t.raw);if(k<0)return;ls.splice(k,1);
+  let r=ls.findIndex(l=>/^## Results\s*$/.test(l));if(r<0){ls.push('','## Results');r=ls.length-1}
+  ls.splice(r+1,0,'- [x] '+(pass?'PASS':'FAIL')+' '+day+' **'+t.what+'**'+(note?' — '+note.replace(/\s+/g,' ').slice(0,300):'')+(t.tell?' // tell: '+t.tell:''));
+  await putFile('TESTING.md',ls.join('\n'),f.sha,'[kevin-test] '+(pass?'PASS':'FAIL')+': '+t.what.slice(0,90)+(note?' — '+note.slice(0,80):''))})}
+async function openHubFile(path,st){if(/^https?:/.test(path)){window.open(path,'_blank','noopener');return}
+  st.textContent='Getting the file…';try{const r=await fetch(API+'/contents/'+path.split('/').map(encodeURIComponent).join('/')+'?ref=main',{headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github.raw','X-GitHub-Api-Version':'2022-11-28'},cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);const b=await r.blob();const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=path.split('/').pop();document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);st.textContent='Downloaded '+path.split('/').pop()+'. Open it in the app you are testing.'}
+  catch(e){st.textContent='Could not get the file ('+e.message+').'}}
+function renderTests(){if(!DATA)return;const ul=document.getElementById('testlist');if(!ul)return;ul.replaceChildren();const T=DATA.tests||{items:[],recent:[]};
+  if(!T.items.length)ul.append(el('li','empty','Nothing to test right now.'));
+  for(const t of T.items){const li=el('li');const tx=el('div','tx',t.what);if(t.goal)tx.append(el('small',null,t.goal));
+    if(t.steps.length){const ol=el('ol','tsteps');for(const s of t.steps)ol.append(el('li',null,s));tx.append(ol)}
+    const st=el('small','note');const bx=el('div','btns');
+    for(const f of t.files){const b=el('button','open',t.files.length>1?'File: '+f.split('/').pop().slice(0,28):'Get file');b.type='button';b.addEventListener('click',()=>openHubFile(f,st));bx.append(b)}
+    const ok=el('button','open','Passed');ok.type='button';const no=el('button','open','Failed');no.type='button';
+    const save=async(pass,note)=>{ok.disabled=no.disabled=true;try{await testResult(t,pass,note);li.remove();setTimeout(()=>refresh(false),1200)}catch(e){ok.disabled=no.disabled=false;st.textContent='Could not save ('+e.message+').'}};
+    ok.addEventListener('click',()=>save(true,''));
+    no.addEventListener('click',()=>{if(tx.querySelector('.tfail'))return;const fx=el('div','tfail');const inp=document.createElement('input');inp.placeholder='What went wrong? (page, step, what you saw)';const sv=el('button','open','Save');sv.type='button';sv.addEventListener('click',()=>{if(!inp.value.trim()){inp.focus();return}save(false,inp.value.trim())});fx.append(inp,sv);tx.append(fx);inp.focus()});
+    bx.append(ok,no);tx.append(st);li.append(el('span','k test','Test'),tx,bx);ul.append(li)}
+  const d=document.getElementById('testdone');if(d)d.textContent=T.recent.length?'Recent: '+T.recent.slice(0,3).join(' · '):'';
+  const bd=document.getElementById('bd-test');if(bd){bd.textContent=T.items.length;bd.classList.toggle('on',T.items.length>0)}}
 const MANUAL_LANES=new Set(['Art','Duet']);
 function needItems(){const out=[];const rank={NOW:0,NEXT:3,PC:4,WAIT:5};
   for(const a of DATA.approvals||[]){out.push({rank:-1,kind:'ok',k:'Your OK',title:a.who+': '+a.what,sub:a.say?'Say in '+a.who+(a.who==='R2'?'\'s':'')+' chat:':'Open '+a.who+'\'s chat',say:a.say,sp:spaceOf(a.what,a.who),appr:a})}
@@ -1012,7 +1053,7 @@ function tagSpaces(){if(!DATA)return;
   const wl=document.querySelectorAll('#waiting>li');(DATA.waiting||[]).forEach((w,k)=>{if(wl[k])wl[k].dataset.sp=spaceOf(w.action+' '+w.detail)})}
 setInterval(()=>{if(DATA){renderCrew()}},60000);
 function renderTop() {if(!DATA)return;
-  renderWorking();try{renderCrew();renderNeeds()}catch(e){console.error(e)}
+  renderWorking();try{renderCrew();renderNeeds();renderTests()}catch(e){console.error(e)}
   renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderTasks();renderDone();renderNew();checkAlerts();try{tagSpaces();applySpace()}catch(e){console.error(e)}
   const dl = document.getElementById('now'); dl.replaceChildren();
   for (const k of ['Task', 'Doing', 'Blocked on', 'Next']) {
@@ -1579,11 +1620,12 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
 <button role="tab" data-t="today" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today<span class="bd" id="bd-today"></span></button>
 <button role="tab" data-t="tasks" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>Tasks</button>
 <button role="tab" data-t="send" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg>Send<span class="bd" id="bd-send"></span></button>
+<button role="tab" data-t="test" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7.5 14h9"/></svg>Test<span class="bd" id="bd-test"></span></button>
 <button role="tab" data-t="hub" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg>Hub</button>
 </nav>
 <script>
 (function(){const app=document.getElementById('app'),nav=document.getElementById('ptabs');if(!app||!nav)return;
-const map={needs:'today',crew:'today',score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
+const map={testp:'test',needs:'today',crew:'today',score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
 for(const e of app.children){if(e.id==='wires'||e.tagName==='HEADER'||e.id==='newbar'||e.id==='spaces')continue;let t=map[e.id];
  if(!t){if(e.classList.contains('waiting'))t='today';else if(e.classList.contains('msg'))t='send';else t='hub'}e.dataset.tab=t}
 let cur='today';try{cur=localStorage.getItem('wire.ptab')||'today'}catch{}
