@@ -538,6 +538,18 @@ h2::before{width:5px;height:1.15em;box-shadow:0 0 10px -1px var(--sec)}
 .nlist .k.ok{background:var(--kevin);color:var(--bg,#fff)}
 .nlist .btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .nlist .say{font:600 12px var(--mono);color:var(--ink)}
+.nlist .k.stuck{background:rgba(229,72,77,.16);color:#ff6b70}
+#stuckp{border-color:rgba(229,72,77,.55)!important}
+#stuckp h2{--sec:#e5484d}
+#delivp h2,#duetp h2{--sec:var(--claude)}
+#duetp h2{--sec:var(--r2)}
+.nlist .k.rs-wait{background:var(--warn-soft);color:var(--warn)}
+.nlist .k.rs-pass{background:var(--r2-soft);color:var(--r2)}
+.nlist .k.rs-fix{background:rgba(229,72,77,.16);color:#ff6b70}
+.nlist .k.rs-seen{background:var(--line);color:var(--muted)}
+.nlist .k.duet{background:var(--r2-soft);color:var(--r2)}
+#mto{font:14px var(--body);padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--sunk,var(--surface));color:var(--ink)}
+#delivlist .tx small{display:block}
 .nlist .k.test{background:var(--claude-soft,var(--r2-soft));color:var(--claude,var(--ink))}
 .tsteps{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.45}
 .tsteps li{display:list-item!important;border:0!important;padding:1px 0!important;grid-template-columns:none!important}
@@ -565,7 +577,7 @@ h2::before{width:5px;height:1.15em;box-shadow:0 0 10px -1px var(--sec)}
 </style>
 
 
-<script>/*build*/const WIRE_BUILD='20261126121248';
+<script>/*build*/const WIRE_BUILD='20261126123718';
 (function(){try{const k='wire.reloadedFor';fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/WIRE_BUILD='(\d+)'/);if(m&&m[1]!==WIRE_BUILD&&sessionStorage.getItem(k)!==m[1]){sessionStorage.setItem(k,m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(()=>{})}catch{}})();</script>
 </head>
 <body>
@@ -604,6 +616,12 @@ h2::before{width:5px;height:1.15em;box-shadow:0 0 10px -1px var(--sec)}
 
   <nav class="spaces" id="spaces" aria-label="Business"><span class="lbl">Business</span></nav>
 
+  <section class="panel needs stuck" id="stuckp" aria-labelledby="stuck-h" hidden>
+    <h2 id="stuck-h">Stuck</h2>
+    <p class="hint">An agent can't go on until someone acts. Copy the note to whoever it needs, then tap Resolved.</p>
+    <ul class="nlist" id="stucklist"></ul>
+  </section>
+
   <section class="panel needs" id="needs" aria-labelledby="needs-h">
     <h2 id="needs-h">Needs you</h2>
     <p class="hint">Only what needs you: approvals first (copy the exact words, paste them in that chat, tap Done), then anything manual. Agents take their own hub lines.</p>
@@ -615,6 +633,18 @@ h2::before{width:5px;height:1.15em;box-shadow:0 0 10px -1px var(--sec)}
     <p class="hint">Things only you can test (tablet, print, form, real device). Open the file, follow the steps, then tap Passed or Failed. Failed asks what went wrong. Agents read your result in the hub.</p>
     <ul class="nlist" id="testlist"></ul>
     <div class="tdone" id="testdone"></div>
+  </section>
+
+  <section class="panel needs" id="delivp" aria-labelledby="deliv-h">
+    <h2 id="deliv-h">Deliveries</h2>
+    <p class="hint">The latest work agents sent for review, and what Claude said. Waiting means Claude hasn't reviewed it yet. FIX means it went back to the agent. PASS means it can move to the next step.</p>
+    <ul class="nlist" id="delivlist"></ul>
+  </section>
+
+  <section class="panel needs" id="duetp" aria-labelledby="duet-h">
+    <h2 id="duet-h">Duet</h2>
+    <p class="hint">Duet's newest log entries, copied into the hub by Claude on each check.</p>
+    <ul class="nlist" id="duetlist"></ul>
   </section>
 
   <section class="panel crew" id="crew" aria-labelledby="crew-h">
@@ -663,12 +693,13 @@ h2::before{width:5px;height:1.15em;box-shadow:0 0 10px -1px var(--sec)}
   </section>
 
   <section class="panel msg" aria-labelledby="msg-h">
-    <h2 id="msg-h">Message R2</h2>
+    <h2 id="msg-h">Message an agent</h2>
     <form id="mform">
-      <textarea id="mtext" rows="3" maxlength="2000" placeholder="Write to R2. It goes to his inbox as from you." aria-label="Message to R2"></textarea>
-      <div class="mrow"><button class="sbtn" type="submit" id="msend">Send to R2</button><span class="note" id="mnote" aria-live="polite"></span></div>
+      <div class="mrow"><label for="mto" class="note">To</label><select id="mto" aria-label="Send to"><option>R2</option><option>Codex-P</option><option>Claude-J</option><option>Claude-F</option><option>Codex-K</option><option>Claude</option></select></div>
+      <textarea id="mtext" rows="3" maxlength="2000" placeholder="Write to an agent. It goes to their hub inbox as from you." aria-label="Message to the agent"></textarea>
+      <div class="mrow"><button class="sbtn" type="submit" id="msend">Send</button><span class="note" id="mnote" aria-live="polite"></span></div>
     </form>
-    <p class="hint">R2 and Claude both see it in the hub. Until R2 confirms he accepts approvals sent this way, keep approvals for spending, publishing and releases in R2's chat.</p>
+    <p class="hint">It lands in the agent's hub inbox (R2: INBOX-R2.md, others: inbox/&lt;agent&gt;.md). Then tell that chat "check the hub". Approvals for spending, publishing and releases still go in the agent's own chat.</p>
   </section>
 
   <section class="working" id="working" aria-label="Working on now" aria-live="polite"></section>
@@ -820,7 +851,7 @@ async function loadCodex(){const out=[],seen=new Set();let denied=0;
 async function load() {
   const commits = await gh('/commits?sha=main&per_page=100');
   const head = commits[0] && commits[0].sha;
-  const [statusMd, inboxMd, tasksMd, cinboxMd, needsMd, testMd] = await Promise.all([gh('/contents/STATUS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-R2.md?ref=main', true).catch(() => ''), gh('/contents/TASKS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-CLAUDE.md?ref=main', true).catch(() => ''), gh('/contents/NEEDS-KEVIN.md?ref=main', true).catch(() => ''), gh('/contents/TESTING.md?ref=main', true).catch(() => '')]);
+  const [statusMd, inboxMd, tasksMd, cinboxMd, needsMd, testMd, blockMd, duetMd] = await Promise.all([gh('/contents/STATUS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-R2.md?ref=main', true).catch(() => ''), gh('/contents/TASKS.md?ref=main', true).catch(() => ''), gh('/contents/INBOX-CLAUDE.md?ref=main', true).catch(() => ''), gh('/contents/NEEDS-KEVIN.md?ref=main', true).catch(() => ''), gh('/contents/TESTING.md?ref=main', true).catch(() => ''), gh('/contents/BLOCKERS.md?ref=main', true).catch(() => ''), gh('/contents/duet/LOG.md?ref=main', true).catch(() => '')]);
   const events = [];
   for (const c of commits) {
     const subj = c.commit.message.split('\n')[0];
@@ -862,7 +893,7 @@ async function load() {
     });
   };
   const sig = head + '|' + (cx[0] ? cx.map(e => e.t).sort().pop() : ''); const changed = sig !== lastHead; lastHead = sig;
-  DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd), approvals: parseApprovals(needsMd), tests: parseTests(testMd), backlog, cinbox, tasksExist: !!tasksMd };
+  DATA = { generated: new Date().toISOString(), events, now, questions, inbox, waiting: parseWaiting(statusMd), score: parseScore(statusMd), review: parseReview(statusMd), ready: parseReady(statusMd), approvals: parseApprovals(needsMd), tests: parseTests(testMd), blockers: parseBlockers(blockMd), duet: parseDuet(duetMd), deliveries: buildDeliveries(commits, events), backlog, cinbox, tasksExist: !!tasksMd };
   return changed;
 }
 
@@ -1038,6 +1069,41 @@ function renderTests(){if(!DATA)return;const ul=document.getElementById('testlis
     bx.append(ok,no);tx.append(st);li.append(el('span','k test','Test'),tx,bx);ul.append(li)}
   const d=document.getElementById('testdone');if(d)d.textContent=T.recent.length?'Recent: '+T.recent.slice(0,3).join(' · '):'';
   const bd=document.getElementById('bd-test');if(bd){bd.textContent=T.items.length;bd.classList.toggle('on',T.items.length>0)}}
+// ---- Stuck (BLOCKERS.md), Deliveries + review status, Duet feed (Kevin, Nov 26) ----
+// BLOCKERS.md line: "- [ ] **Agent** — what is stuck // needs: who or what unblocks it // since: YYYY-MM-DD"
+function parseBlockers(md){const open=(md||'').split(/^## Resolved\s*$/m)[0];return open.split('\n').filter(l=>/^- \[ \] \*\*/.test(l)).map(l=>{const m=l.match(/^- \[ \] \*\*(.+?)\*\*\s*[—–-]\s*(.*)$/);if(!m)return null;const o={raw:l,who:m[1].trim(),what:'',needs:'',since:''};const ps=m[2].split(/\s*\/\/\s*/);o.what=ps[0].trim();for(const q of ps.slice(1)){const k=q.match(/^(needs|since):\s*(.*)$/i);if(k)o[k[1].toLowerCase()]=k[2].trim()}return o}).filter(Boolean)}
+async function unblock(b,note){const day=new Date(Date.now()-4*3600e3).toISOString().slice(0,10);await withRetry(async()=>{const f=await getFile('BLOCKERS.md');let ls=f.text.split('\n');const k=ls.indexOf(b.raw);if(k<0)return;ls.splice(k,1);let r=ls.findIndex(l=>/^## Resolved\s*$/.test(l));if(r<0){ls.push('','## Resolved');r=ls.length-1}ls.splice(r+1,0,'- [x] '+day+' **'+b.who+'** — '+b.what+(note?' — Kevin: '+note.replace(/\s+/g,' ').slice(0,200):''));await putFile('BLOCKERS.md',ls.join('\n'),f.sha,'[unblocked] '+b.who+': '+b.what.slice(0,90))})}
+// duet/LOG.md: Claude mirrors Duet's Google Doc log here, newest first, one "- <date time>: <text>" per line.
+function parseDuet(md){return (md||'').split('\n').filter(l=>/^- \S/.test(l)).slice(0,4).map(l=>{const m=l.slice(2).match(/^(.+?\d{1,2}:\d{2}\s*[AP]M):\s*(.*)$/i);return m?{t:m[1],text:m[2]}:{t:'',text:l.slice(2)}})}
+const AGENT_RX=/\b(Claude-J|Claude-F|Codex-P|Codex-K|R2|Duet|Art)\b/i;
+function whoOf(subj,files){const m=subj.match(/^\s*(Claude-J|Claude-F|Codex-P|Codex-K|R2|Duet)\s*[:#]/i);if(m)return m[1];for(const f of files||[]){const k=f.match(/_(codex-p|codex-k|claude-j|claude-f|r2)[-_.]/i);if(k)return k[1].replace(/^(\w+)-(\w)/,(a,x,y)=>x[0].toUpperCase()+x.slice(1)+'-'+y.toUpperCase()).replace(/^R2$/i,'R2')}return /\br2\b/i.test(subj)?'R2':'Agent'}
+// A delivery is any non-Claude "[for-claude]" commit. Its review status comes from a later Claude commit that names its short sha:
+// The verdict is read from the words right after the sha, up to the next ; , or line break: FIX / REDO / "fixes before" = FIX, PASS = PASS, otherwise "Seen".
+function buildDeliveries(commits,events){const byTitle={};for(const e of events)if(e.title)byTitle[e.title]=e;const out=[];
+  for(const c of commits){const subj=c.commit.message.split('\n')[0];if(c.commit.author.name==='Claude'||!/\[for-claude\]/i.test(subj))continue;const s7=c.sha.slice(0,7);const t=c.commit.author.date;
+    const rv=commits.find(x=>x.commit.author.name==='Claude'&&x.commit.author.date>=t&&x.commit.message.includes(s7));let st='wait',said='';
+    if(rv){const m=rv.commit.message;const i=m.indexOf(s7);const seg=m.slice(i).split(/[;,\n]/)[0];said=seg.replace(s7,'').replace(/^[\s:·-]+/,'').trim();st=/\bFIX(ES)?\b|\bREDO\b|fixes before|send(s)? back/i.test(seg)?'fix':/\bPASS/i.test(seg)?'pass':'seen'}
+    const ev=byTitle[subj]||{};out.push({s7,t,st,who:whoOf(subj.replace(/\[for-claude\]\s*/i,''),ev.files),title:subj.replace(/\[for-claude\]\s*/i,''),rv:said,link:'https://github.com/'+OWNER+'/'+REPO+'/commit/'+c.sha});if(out.length>=10)break}
+  return out}
+function ago(t){const m=Math.round((Date.now()-new Date(t).getTime())/60000);return m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'}
+function renderStuck(){if(!DATA)return;const sec=document.getElementById('stuckp');if(!sec)return;const B=DATA.blockers||[];sec.hidden=!B.length;const ul=document.getElementById('stucklist');ul.replaceChildren();
+  for(const b of B){const li=el('li');const tx=el('div','tx',b.who+' is stuck: '+b.what);if(b.needs)tx.append(el('small',null,'Needs: '+b.needs));if(b.since)tx.append(el('small',null,'Since '+b.since));const st=el('small','note');tx.append(st);
+    const bx=el('div','btns');const cp=el('button','open','Copy note');cp.type='button';cp.addEventListener('click',async()=>{const txt='check the hub: '+b.who+' is blocked on "'+b.what+'". See BLOCKERS.md.';try{await navigator.clipboard.writeText(txt);st.textContent='Copied.'}catch{st.textContent=txt}});
+    const ok=el('button','open','Resolved');ok.type='button';ok.addEventListener('click',async()=>{ok.disabled=true;try{await unblock(b,'');li.remove();setTimeout(()=>refresh(false),1200)}catch(e){ok.disabled=false;st.textContent='Could not save ('+e.message+').'}});
+    bx.append(cp,ok);li.append(el('span','k stuck','Stuck'),tx,bx);ul.append(li)}
+  const bd=document.getElementById('bd-today');if(bd&&B.length)bd.classList.add('on')}
+function renderDeliv(){if(!DATA)return;const ul=document.getElementById('delivlist');if(!ul)return;ul.replaceChildren();const D=DATA.deliveries||[];
+  if(!D.length)ul.append(el('li','empty','No agent deliveries yet.'));const lab={wait:'Waiting for Claude',pass:'PASS',fix:'FIX',seen:'Seen'};
+  for(const d of D){const li=el('li');const tx=el('div','tx',d.title);tx.append(el('small',null,d.who+' · '+ago(d.t)+(d.rv?' · Claude: '+d.rv.slice(0,110):'')));const a=el('a','open','Open');a.href=d.link;a.target='_blank';a.rel='noopener';const bx=el('div','btns');bx.append(a);li.append(el('span','k rs-'+d.st,lab[d.st]),tx,bx);ul.append(li)}}
+function renderDuet(){if(!DATA)return;const ul=document.getElementById('duetlist');if(!ul)return;ul.replaceChildren();const D=DATA.duet||[];if(!D.length){ul.append(el('li','empty','No Duet entries copied yet.'));return}
+  for(const d of D){const li=el('li');const tx=el('div','tx',d.text.replace(/https?:\S+/g,'').trim().slice(0,260));if(d.t)tx.append(el('small',null,d.t));li.append(el('span','k duet','Duet'),tx);ul.append(li)}}
+// Message any agent: R2 keeps INBOX-R2.md; everyone else gets inbox/<Agent>.md (newest on top).
+const MSG_TO=['R2','Codex-P','Claude-J','Claude-F','Codex-K','Claude'];
+async function sendToAgent(agent,title,body){if(agent==='R2')return sendToInbox(title,body,'[kevin-msg]');const path='inbox/'+agent+'.md';const stamp=prStamp();const hm=stamp.slice(0,10)+' '+stamp.slice(11,16);const safe=title.replace(/[\r\n#]/g,' ').slice(0,80);
+  const item='## '+hm+' · '+safe+' (Kevin via Reactor Core)\n\nStatus: **New**\n\n'+body.trim()+'\n\n---\n';
+  await withRetry(async()=>{let f=null;try{f=await getFile(path)}catch(e){if(e.message!=='not-found')throw e}
+    const head='# Inbox for '+agent+'\n\nKevin writes here from Reactor Core. Read it on every "check the hub": do the New items, then change Status to **Done** (or **Taken**) and say so in your report. Approvals for publishing, spending and releases still come in your own chat.\n\n---\n';
+    const text=f?f.text.replace(/\n---\n/,'\n---\n'+item):head+item;await putFile(path,text,f?f.sha:undefined,'[kevin-msg] to '+agent+': '+safe)})}
 const MANUAL_LANES=new Set(['Art','Duet']);
 function needItems(){const out=[];const rank={NOW:0,NEXT:3,PC:4,WAIT:5};
   for(const a of DATA.approvals||[]){out.push({rank:-1,kind:'ok',k:'Your OK',title:a.who+': '+a.what,sub:a.say?'Say in '+a.who+(a.who==='R2'?'\'s':'')+' chat:':'Open '+a.who+'\'s chat',say:a.say,sp:spaceOf(a.what,a.who),appr:a})}
@@ -1068,7 +1134,7 @@ function tagSpaces(){if(!DATA)return;
   const wl=document.querySelectorAll('#waiting>li');(DATA.waiting||[]).forEach((w,k)=>{if(wl[k])wl[k].dataset.sp=spaceOf(w.action+' '+w.detail)})}
 setInterval(()=>{if(DATA){renderCrew()}},60000);
 function renderTop() {if(!DATA)return;
-  renderWorking();try{renderCrew();renderNeeds();renderTests()}catch(e){console.error(e)}
+  renderWorking();try{renderCrew();renderNeeds();renderTests();renderStuck();renderDeliv();renderDuet()}catch(e){console.error(e)}
   renderWaiting(DATA.waiting);renderScore();renderReview();renderReady();renderTasks();renderDone();renderNew();checkAlerts();try{tagSpaces();applySpace()}catch(e){console.error(e)}
   const dl = document.getElementById('now'); dl.replaceChildren();
   for (const k of ['Task', 'Doing', 'Blocked on', 'Next']) {
@@ -1511,7 +1577,7 @@ function renderReady(){if(!DATA)return;readyAlerts();alertButton();const items=D
     ed.addEventListener('click',()=>{const t=document.getElementById('mtext');t.value=it.text;const f=document.getElementById('mform');f.dataset.raw=it.raw;f.dataset.title=it.title;t.focus();t.scrollIntoView({block:'center'})});
     row.append(go,ed,st);d.append(row);box.append(d)}}
 document.getElementById('mform').addEventListener('submit',async e=>{e.preventDefault();const t=document.getElementById('mtext'),n=document.getElementById('mnote'),b=document.getElementById('msend');const v=t.value.trim();if(!v){n.textContent='Write a message first.';return}
-  b.disabled=true;n.textContent='Sending…';const f=document.getElementById('mform');try{await sendToInbox(f.dataset.title||v.split('\n')[0],v,'[kevin-msg]',f.dataset.raw||null);delete f.dataset.raw;delete f.dataset.title;t.value='';n.textContent='Sent to R2\'s inbox. Claude sees it too.';setTimeout(()=>refresh(false),1500)}
+  b.disabled=true;n.textContent='Sending…';const f=document.getElementById('mform');const to=(document.getElementById('mto')||{}).value||'R2';try{if(to==='R2')await sendToInbox(f.dataset.title||v.split('\n')[0],v,'[kevin-msg]',f.dataset.raw||null);else await sendToAgent(to,v.split('\n')[0],v);delete f.dataset.raw;delete f.dataset.title;t.value='';n.textContent='Sent to '+to+'\'s hub inbox.'+(to==='Claude'?'':' Now tell '+to+': check the hub.');setTimeout(()=>refresh(false),1500)}
   catch(err){n.textContent=err.message==='nowrite'?'Your token is read-only. See "Enable check-offs" above.':'Could not send ('+err.message+'). Try again.'}finally{b.disabled=false}});
 
 document.getElementById('pair').addEventListener('click',async()=>{
@@ -1640,7 +1706,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && to
 </nav>
 <script>
 (function(){const app=document.getElementById('app'),nav=document.getElementById('ptabs');if(!app||!nav)return;
-const map={testp:'test',needs:'today',crew:'today',score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
+const map={testp:'test',stuckp:'today',needs:'today',delivp:'today',duetp:'hub',crew:'today',score:'today',reviewp:'today',working:'today',tasksp:'tasks',donep:'tasks',readyp:'send'};
 for(const e of app.children){if(e.id==='wires'||e.tagName==='HEADER'||e.id==='newbar'||e.id==='spaces')continue;let t=map[e.id];
  if(!t){if(e.classList.contains('waiting'))t='today';else if(e.classList.contains('msg'))t='send';else t='hub'}e.dataset.tab=t}
 let cur='today';try{cur=localStorage.getItem('wire.ptab')||'today'}catch{}
